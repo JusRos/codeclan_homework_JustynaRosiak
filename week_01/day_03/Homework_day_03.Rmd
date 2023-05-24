@@ -1,0 +1,97 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+
+```
+
+```{r}
+movies <- read_csv("data/movies.csv")
+```
+```{r}
+view(movies)
+```
+
+Q1
+- order them by release date, budget, popularity etc.
+- see the average budget for a specific year or length of the movie
+- see the average length of the movie for a specific year
+- how many or what movies do not have a website, is it connected with the length of the movie, populatity, budget, revenue etc
+- are there any movies with the original_title being different to the title
+
+- see the relationship between vote average and vote count
+
+Q2
+```{r}
+movies_selected <- movies %>%
+  select(title, runtime, budget)
+
+movies_selected
+  
+```
+Q3 Ok, now take your subsetted data movies_selected, and count the number of missing values in each column.
+```{r}
+movies_selected %>% 
+mutate(missing = (is.na(movies_selected))) %>% 
+summarise(total_missing = sum(missing))
+```
+Q4
+here’s not too many NAs, but there are actually quite a few movies with a runtime of 0 in this dataset. Since it’s impossible for a movie to have a runtime of 0, use the function na_if to convert runtimes of length 0 into NAs. Save this into a new object called movies_runtime. Then count how many missing values there are now in the column runtime.
+
+```{r}
+movies_runtime <- movies_selected %>% 
+  select(runtime) %>% 
+  mutate(runtime = na_if(runtime, 0)
+  )
+
+movies_runtime %>% 
+  filter(is.na(movies_runtime))
+```
+Q5
+Impute the missing values in runtime with the median runtime using coalesce and save this into a new object called movies_imputed. There should now be no missing values in the column runtime - check this to make sure.
+
+
+```{r}
+movies_imputed <- movies_runtime %>% 
+  mutate(runtime = coalesce(runtime, median(runtime), na.rm = TRUE))
+
+movies_imputed %>% 
+  filter(is.na(movies_imputed))
+```
+
+Q6
+Finally, use the slice_min and slice_max functions on movies_imputed to get the movies with the 10 shortest and 10 longest runtimes.
+
+
+```{r}
+movies_imputed %>% 
+  slice_min(movies_imputed)
+
+
+```
+```{r}
+movies_imputed %>% 
+  slice_max(movies_imputed
+            )
+```
+
+
+
+Q7
+Using the if_else function, impute anything with a budget below $100 with the median budget. Overwrite your movies_imputed so it contains the new budget values.
+
+```{r}
+movies_imputed <-movies_selected %>% 
+  select(budget) %>% 
+  mutate(budget = if_else(budget < 100, median(budget), budget))
+  
+movies_imputed %>% 
+ arrange(movies_imputed)
+  
+```
+
