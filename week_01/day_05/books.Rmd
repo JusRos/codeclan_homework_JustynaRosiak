@@ -125,8 +125,9 @@ longest_book
 avg_book_length <- books %>% 
   select(authors, title, num_pages) %>%
   group_by(authors) %>% 
-  mutate(avg_pages = median(num_pages),.after = num_pages) %>% 
+ summarise(avg_pages = median(num_pages),.after = num_pages) %>% 
   arrange(desc(avg_pages))
+
   
 
   
@@ -186,3 +187,9 @@ books %>%
 
 other things I wanted to know - but didn't manage the code -
 In what langiuages did J.K Rowling published her books? Wanted first 
+
+```{r}
+books %>% 
+filter(authors == starts_with("J.K. Rowling"))
+```
+
