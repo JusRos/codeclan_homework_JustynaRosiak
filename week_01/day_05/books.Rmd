@@ -1,0 +1,188 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+
+```{r}
+library(CodeClanData)
+library(skimr)
+
+```
+
+---- General exploration of a data set
+
+```{r}
+books <- read_csv("books.csv") 
+
+dim(books)
+head(books)
+tail(books)
+view(books)
+names(books)
+glimpse(books)
+skim(books)
+
+```
+---- Check if there are any N/A in the data set
+```{r}
+books %>%   summarise(across(.fns = ~ sum(is.na(.x)))
+  )
+# no n/a's in a data set
+
+```
+
+
+---- Remove books with '0' pages from the analysis as non-existent
+
+```{r}
+books <- books %>% # books are now all the books (having at least 1 page)
+  mutate(num_pages = na_if(num_pages, 0)) %>% 
+  drop_na()
+
+```
+---- Clean a language_code column
+
+```{r}
+# check what codes there are for different languages
+# count(language_code)# noticed 4 different codes for English,
+
+lang_count <- books %>%
+ group_by(language_code) %>%
+  count(language_code) 
+
+lang_count
+ 
+```
+
+
+```{r} 
+#  replace 'en-US', 'en-CA'& 'en-GB' with 'eng';update by reassigning books
+books <- books %>%
+ mutate(language_code = recode(language_code, "en-CA" = "eng", 
+                                "en-US"= "eng", "en-GB" = "eng" )
+)
+
+```
+
+---- Add categories for the number of ratings - none, very low, low, medium, 
+high, very high - just for practice with 'case_when'
+
+
+```{r} 
+# added ratings_count_popularity into books
+books <- books %>% 
+  mutate(ratings_count_popularity = case_when(
+    ratings_count == 0 ~ "none",
+    ratings_count < 10000 ~ "very low",
+    ratings_count >= 10000 & ratings_count < 100000 ~ "low",
+    ratings_count >= 100000 & ratings_count < 200000 ~ "medium",
+    ratings_count >= 200000 ~ "high",
+    ratings_count <= 1000000 ~ "very high"
+
+  ),.after = ratings_count)
+
+view(books)
+```
+
+
+
+
+--- 1. What author published the most books?
+
+
+```{r}
+books_per_author <- books %>% 
+  count(authors, sort = TRUE) 
+# 'sort = TRUE' allows the results to be grouped from the highest to the lowest
+
+books_per_author
+```
+Answer: P.G. Wodehouse and Stephen King published the most books - 40 each
+*** not sure how to include in the groups authors, who cooperated with others 
+as with the above function, they are being treated as a separate author***
+
+--- 2.What were 10 the longest books from the data set?
+
+```{r}
+longest_book <- books %>% 
+  select(num_pages, authors, title, ) %>%
+ arrange(desc(num_pages)) %>% 
+  head(num_pages, n = 10)
+
+
+longest_book
+```
+
+--- 3. What is an average length of pages per author?
+
+```{r}
+
+avg_book_length <- books %>% 
+  select(authors, title, num_pages) %>%
+  group_by(authors) %>% 
+  mutate(avg_pages = median(num_pages),.after = num_pages) %>% 
+  arrange(desc(avg_pages))
+  
+
+  
+
+avg_book_length
+```
+
+--- 4. What is the highest rated book written in English?
+
+
+```{r}
+recommended_books <- books %>%
+  select(authors, title,average_rating, ratings_count,language_code) %>% 
+    # narrow dow choices to books written in Englis only
+  mutate(language_code = if_else(language_code == "eng", TRUE, FALSE)) %>% 
+    filter(language_code, TRUE) %>% 
+  # choose only rating wahere more than 1 mln recommendations was available
+    mutate(lots_of_ratings = ratings_count >= 1000000) %>% 
+    filter(lots_of_ratings, TRUE) %>% 
+  # choose only books with rating over 4.0 _ on a scale from 0-5)
+    mutate(average_rating = if_else(average_rating >= 4.0, TRUE, FALSE)) %>% 
+  filter(average_rating, TRUE) %>% 
+  head(recommended_books, n = 10)
+recommended_books
+    
+# mutate(good_rating = average_rating >= 4.5)
+  
+# mutate(recommended = if_else(average_rating >= 4.5, "YES", "NO") & (ratings_count_popularity == "high" or "very high"))
+  
+
+
+
+
+```
+
+--- 
+
+
+5. Who published the most books?
+
+```{r}
+
+books %>% 
+  group_by(publisher) %>% 
+count(publisher) %>% 
+  arrange(desc(n))
+
+```
+```{r}
+books %>% 
+ select(contains('Rowling'))
+```
+```{r}
+books %>% 
+  select(if_else(contains("Rowling"), TRUE, FALSE))
+```
+
+other things I wanted to know - but didn't manage the code -
+In what langiuages did J.K Rowling published her books? Wanted first 

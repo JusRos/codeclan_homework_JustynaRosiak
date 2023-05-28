@@ -92,6 +92,30 @@ movies_imputed <-movies_selected %>%
   
 movies_imputed %>% 
  arrange(movies_imputed)
-  
-```
+```  
 
+
+app
+```{r}
+movies %>% 
+  select(title, budget, runtime) %>% 
+  summarise(across
+            .cols = everything(),
+            .fns = ~sum(is.na(.x))) # apply the sum to all columns .x does that
+
+```
+Using case_when, create a new column called budget_type and label budgets as follows:
+
+Budgets below 12 million as ‘Small budget’
+Budgets between 12 and 40 million as ‘Medium budget’
+Budgets 40 millions and above as ‘Big budget’
+Save this into a new variable called movie_budgets.
+ Millions are written using e6
+```{r}
+movie_budgets <- movies_imputed %>% 
+  mutate(budget_type = case_when(
+    budget < 12e6 ~ "Small budget",
+    budget < 40e6 ~ "Medium budget",
+    budget >= 40e6 ~ "Big budget"
+  ))
+```
