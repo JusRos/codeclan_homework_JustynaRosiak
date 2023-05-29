@@ -78,7 +78,7 @@ high, very high - just for practice with 'case_when'
 books <- books %>% 
   mutate(ratings_count_popularity = case_when(
     ratings_count == 0 ~ "none",
-    ratings_count < 10000 ~ "very low",
+    ratings_count < 10000 ~ "vedata:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAWElEQVR42mNgGPTAxsZmJsVqQApgmGw1yApwKcQiT7phRBuCzzCSDSHGMKINIeDNmWQlA2IigKJwIssQkHdINgxfmBBtGDEBS3KCxBc7pMQgMYE5c/AXPwAwSX4lV3pTWwAAAABJRU5ErkJggg==ry low",
     ratings_count >= 10000 & ratings_count < 100000 ~ "low",
     ratings_count >= 100000 & ratings_count < 200000 ~ "medium",
     ratings_count >= 200000 ~ "high",
@@ -188,8 +188,68 @@ books %>%
 other things I wanted to know - but didn't manage the code -
 In what langiuages did J.K Rowling published her books? Wanted first 
 
+
+
 ```{r}
 books %>% 
 filter(authors == starts_with("J.K. Rowling"))
 ```
+---- Homework review
+# 1. How many books in each language?
 
+```{r}
+books %>% 
+  count(language_code)
+# or
+books %>% 
+  group_by(language_code) %>% 
+  summarise(num_of_books = n()) %>% 
+  arrange(desc(num_of_books))
+  # summarise(num_of_books = n())
+```
+# Any similarities between top rated books?
+
+```{r}
+books %>% 
+  slice_max(average_rating, n = 5)
+
+```
+
+# Do more recently published books receive a higher review than older books?
+```{r}
+get new variable - new_pub_date
+books %>% 
+  # filter(ratings_count > 1) %>% 
+  # select(title, authors, publication_date, average_rating) %>% 
+new_pub_date <- mutate(as.Date(publication_date, "%m/%d/%Y")) 
+```
+
+```{r} 
+# code done by Thijmen
+# We start again with the min1_rating dataset
+books_min1_rating %>% 
+  select(title, authors, publication_date, average_rating) %>% 
+  # lets focus on years only
+  mutate(year = format(as.Date(books_min1_rating$publication_date,
+                               format="%m/%d/%Y"), "%Y"),
+                       .before = publication_date) %>% 
+# Let's just create 2 groups, before 2000 is 'old' and younger than 2000 'new'
+mutate(age = case_when(
+  year <2000 ~ "old",
+  year >=2000 ~ "young"
+), .after = year) %>% 
+ # filter(is.na(year)) # there are 2 books that have NA for year, but publication date is like normal?!
+  group_by(age) %>% 
+  summarise(average_rating = mean(average_rating))
+  
+# In conclusion: 'old' books have an average rating of 3.95, 'young' 3.93
+# old win!
+```
+
+# 
+Which languages did Jk Rowling publish?
+```{r}
+books %>% 
+  select()
+```
+# are there anyt issin
