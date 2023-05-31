@@ -58,7 +58,7 @@ Find the total number of favourites (stored in `favorite_count`) that CodeClan t
 favourite_count <- code_clan_tweets %>% 
 select(favorite_count, is_quote) %>% 
   filter(is_quote == FALSE) %>% 
-  summarise(favourite_count = n())
+  summarise(favourite_count = sum(favorite_count))
 
 
 
@@ -88,12 +88,11 @@ retweets
 Count the total number of likes (i.e. total of `favorite_count`), split by `media` type, and arrange them from most likes to least. Assume that any tweets without a listed `media` type are of type "text".  
 
 ```{r}
-
-code_clan_tweets %>% 
-  select(favorite_count, media_type) %>% 
-  mutate(media_type_new = coalesce(media_type, c("text"))) %>% 
-  count(media_type_new) %>% 
-  arrange(desc(n))
+codeclan_tweets %>%
+  mutate(media_type = coalesce(media_type, "text")) %>%
+  group_by(media_type) %>%
+  summarise(favourite_count_total = sum(favorite_count)) %>%
+  arrange(desc(favourite_count_total))
   
 
 
@@ -115,6 +114,7 @@ average_tweet_length
 avg_tweet_length <- code_clan_tweets %>% 
   select(text) %>% 
    summarise(tweet_mean_text = mean(nchar(text), na.rm = TRUE))
+
 avg_tweet_length
 
 ```
@@ -180,11 +180,12 @@ You may need to make sure your tweets are all the same case before searching.
 
 code_clan_tweets %>% 
   select(text) %>% 
-  mutate( edinburgh = str_to_lower(text)) %>% 
+  mutate(edinburgh = str_to_lower(text)) %>% 
   select(edinburgh) %>% 
   mutate(edi = str_detect(edinburgh, pattern = "(edinburgh)")) %>% 
   filter(edi == TRUE) %>% 
   count(edi)
+.0
 ```
 
 <br>
@@ -197,11 +198,13 @@ Think about all the different characters which could be in a Twitter username, d
 </details>
 ```{r}
 
-code_clan_tweets %>% 
+tweets <- code_clan_tweets %>% 
   select(text) %>% 
-  mutate( edinburgh = str_to_lower(text))
+  mutate(edinburgh = str_to_lower(text)) %>% 
+  select(edinburgh) %>% 
+  str_extract_all(edinburgh, pattern = "@[a-z]+", simplify = FALSE)
   
+# view(edinburgh)
 
-str_extract()
 ```
 
