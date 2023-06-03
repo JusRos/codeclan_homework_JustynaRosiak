@@ -1,0 +1,48 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+1. Read the cleaned data into R
+
+```{r}
+readRDS("clean_data/meteorite_tidy.RDS")
+```
+2. Find the names and years found for the 10 largest meteorites in the data.
+
+```{r}
+top_largest <- meteorites_tidy %>% 
+  select(name, year,fall, mass_g) %>% 
+  filter(fall == "Found") %>% 
+  arrange(desc(mass_g)) %>% 
+  slice_max(mass_g, n = 10)
+
+  
+```
+3.Find the average mass of meteorites that were recorded falling, vs. those which were just found.
+
+```{r}
+avg_mass <- meteorites_tidy %>% 
+  select(name, mass_g, fall) %>% 
+  mutate(fall_logical = if_else(fall == "Fell", TRUE, FALSE)) %>% 
+  group_by(fall_logical, fall) %>%
+summarise(average_mass = mean(mass_g))
+avg_mass
+```
+
+4.Find the number of meteorites in each year, for every year since 2000.
+
+```{r}
+meteorites_tidy %>% 
+  select(name, year) %>% 
+  group_by(year) %>% 
+  mutate(new_meteors = if_else(year >= 2000, TRUE, FALSE)) %>% 
+  subset(new_meteors == TRUE) %>% 
+  group_by(year) %>% 
+  summarise(meteorites_by_year = sum(new_meteors))
+
+  
+```
+
