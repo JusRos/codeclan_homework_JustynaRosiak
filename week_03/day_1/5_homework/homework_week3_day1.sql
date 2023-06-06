@@ -162,7 +162,12 @@ SELECT concat(first_name, ' ', last_name, ' - ', department, ' (joined ', EXTRAC
 FROM employees 
 where first_name IS NOT NULL OR last_name IS NOT NULL OR department IS NOT NULL OR start_date IS NOT NULL;
 
-
+/* if wanting to add month
+ * CONCAT(
+    first_name, ' ', last_name, ' - ', department, ' (joined ', 
+    TO_CHAR(start_date, 'FMMonth'), ' ', TO_CHAR(start_date, 'YYYY'), ')'
+  ) AS badge_label
+ */
 /*Question 18.
 Return the first_name, last_name and salary of all employees together 
 with a new column called salary_class with 
