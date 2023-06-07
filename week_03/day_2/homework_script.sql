@@ -175,11 +175,11 @@ Question 5.
 How many of the employees serve on one or more committees?*/
 
 SELECT 
-	DISTINCT committee_id, employee_id
-FROM employees_committees
-GROUP BY employee_id, committee_id
-WHERE employee_id
-ORDER BY employee_id;
+	Count(DISTINCT employee_id)
+FROM employees_committees;
+
+
+
 
 
 
@@ -201,15 +201,12 @@ This requires joining over only two tables
 
 Could you use a join and find rows without a match in the join?*/
 
-SELECT *,
-count(e.id)
-FROM employees AS e
+SELECT
+count(*)AS num_not_in_committees
+FROM employees AS e 
 LEFT JOIN employees_committees AS ec
 ON e.id = ec.employee_id
-WHERE ec.employee_id IS NULL
-GROUP BY ec.id, e.id;
-
-
+WHERE ec.employee_id IS NULL;
 
 
 
