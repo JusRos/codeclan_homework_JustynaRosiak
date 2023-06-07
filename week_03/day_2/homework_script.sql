@@ -47,6 +47,8 @@ INNER JOIN teams AS t
 ON e.team_id = t.id
 WHERE CAST(t.charge_cost AS INTEGER) > 80; 
 
+/* to_number(t.charge_cost, '999') > 80 as an alternative to cast*/
+
 /*Question 2.
 (a). Get a table of all employees details, together with their local_account_no 
 and local_sort_code, if they have them.
