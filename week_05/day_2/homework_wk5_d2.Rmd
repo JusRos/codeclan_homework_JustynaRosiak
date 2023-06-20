@@ -1,0 +1,150 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+You must write down a short summary of what each plot tells you in order to meet MVP.
+
+Question 1.
+
+Load in the libraries you need, and look at the backpack data. Take note of variable names and dimensions.
+
+```{r}
+library(tidyverse)
+library(CodeClanData)
+
+backpack <- backpack
+
+dim(backpack)
+```
+
+Question 2.
+
+What is the distribution of backpack weights that students are carrying? Choose an appropriate graph to show the distribution.
+```{r}
+ggplot(backpack)+
+  aes(x = backpack_weight)+
+  geom_histogram(binwidth = 1, fill = "blue", color = "white")+
+  labs(
+    title = "\n\nBagpacks weight\n\n",
+    x = "\nWeight",
+    y = "\nFrequency\n"
+  ) +
+  scale_y_continuous(breaks = 1:13)+
+  scale_x_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36))+
+  theme(
+    text = element_text(size = 12),
+    title = element_text(size = 14),
+    axis.text = element_text(size = 10),
+    panel.background = element_rect(fill = "white"),
+    panel.grid = element_line(colour = "grey90", linetype = "dotted"))
+
+```
+# The weight of backpacks carried by students ranged from 2kg to 35kg. The majority of people had bagpacks weighing 8 or 10 kg .
+
+Question 3.
+
+Are there differences in backpack weight between sex?
+
+```{r}
+ggplot(backpack)+
+  aes(x = sex, y = backpack_weight)+
+  geom_dotplot(binaxis = "y", stackdir = "center")+
+  scale_y_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36))+
+  labs(
+    title = "\nBackpack weight by gender\n",
+    x = "\nGender\n",
+    y = "\n Weight\n"
+    )+
+  theme(text = element_text(size = 12),
+    title = element_text(size = 14),
+        axis.text = element_text(size = 10),
+    panel.background = element_rect(fill = "white"),
+    panel.grid = element_line(colour = "grey90", linetype = "dotted")
+    
+  )
+
+
+
+```
+
+
+Most females seem to have backpacks between 8-16kg, while most males seem to have backpack weighing 10kg. The heaviest backpack in the data set has been carried by a male.
+
+
+Question 4.
+
+What is the relationship between body weight and backpack weight?
+
+```{r}
+
+ ggplot(backpack)+
+  aes(x = body_weight, y = backpack_weight)+
+  geom_point()+
+ geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(
+    title = "\nRelationship bewteen body and backpack weight\n",
+    x = "\nBody Weight\n",
+    y = "\nBackpack Weight\n"
+  )+
+   theme(text = element_text(size = 12),
+    title = element_text(size = 14),
+        axis.text = element_text(size = 10),
+    panel.background = element_rect(fill = "white"),
+    panel.grid = element_line(colour = "grey90", linetype = "dotted")
+    
+  )
+```
+
+There doesn't seem to be a clear relationship between body and backpack weight.
+Question 5.
+
+Is this relationship different between men and women? Choose an appropriate plot and interpret your findings.
+```{r}
+ggplot(backpack)+
+  aes(x = body_weight, y = backpack_weight, col = sex)+
+  geom_point()+
+   geom_smooth(method = "lm", se = FALSE)
++
+facet_wrap(~sex)
+```
+Females tended to have lower weight (below 150 lb) but were carrying backpacks weighing between 8-16kg/lb, while males weighed mainly over 150lb and were carrying backpacks with various weight.
+
+
+What proportion of students report back pain?
+```{r}
+ggplot(backpack)+
+  aes(x = factor(back_problems))+
+     geom_bar()
+```
+Around one third of students seemed to report back problems.
+```{r}
+ggplot(backpack)+
+  aes(x = body_weight, fill = sex)+
+  geom_bar()+
+   geom_smooth(method = "lm", se = FALSE)
++
+facet_wrap(~sex)
+```
+
+Question 7.
+
+Is this proportion different between men and women?
+```{r}
+ggplot(backpack)+
+  aes(x = factor(back_problems), fill = sex)+
+     geom_bar()
+```
+
+Mostly females reported back problems.
+
+Question 8.
+
+Now you’ve investigated your data separately, create plots to describe the relationship between backpack weight, body weight, gender and reported backpain.
+```{r}
+ggplot(backpack)+
+  aes( x = body_weight, y = backpack_weight, group = back_problems, col = sex )+
+  geom_point()+
+  geom_smooth(method = "lm",se = FALSE, color = "red")+
+  facet_grid(~back_problems~sex)
+```
+
