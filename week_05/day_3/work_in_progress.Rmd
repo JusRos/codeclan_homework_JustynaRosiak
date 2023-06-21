@@ -1,0 +1,60 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+game_sales <- CodeClanData::game_sales
+head(game_sales)
+platform <- game_sales %>% filter(publisher == "Nintendo") %>% mutate(platform = recode( "GC" = "Game Cube", "GBA"= "Game Boy Advance", "XB" = "XBox", platform)) %>% distinct(platform_long) %>% arrange(platform_long) %>%  pull()
+
+genre_input <- game_sales %>% filter(platform == "3DS") %>%
+  filter(platform == platform) %>% distinct(genre) %>% arrange(genre) %>% pull()
+
+
+```
+
+```{r}
+colnames(game_sales)
+skimr::skim(game_sales)
+
+
+game_sales %>% filter(publisher == "Nintendo") %>%  filter(year_of_release == 2006) %>% 
+  filter(platform == "3DS") %>% 
+  ggplot(aes(x = factor(year_of_release), fill = genre))+
+  geom_bar(position = "dodge", show.legend = FALSE)+
+  labs(
+    x = "\nGenre\n",
+    y = "\nCount\n"
+  ) + 
+
+  theme(axis.text = element_text(size = 8, face = "plain"))
+
+```
+
+
+```{r}
+game_sales %>% filter(publisher == "Nintendo") %>% filter(year_of_release == 2011) %>% 
+  ggplot()+
+  aes(x = factor(year_of_release), fill = platform) +
+  geom_bar(position = "dodge")
+year_input <- game_sales %>% distinct(year_of_release) %>% arrange(year_of_release) %>% pull()
+
+game_publisher <- game_sales %>% distinct(publisher) %>% arrange(publisher) %>% pull()
+```
+
+```{r}
+
+game_sales %>% filter(publisher == game_publisher) %>%
+        filter(year_of_release == year_input) %>% 
+        ggplot(aes(x = factor(year_of_release), fill = platform))+
+        geom_bar(position = "dodge", show.legend = TRUE)+
+        labs(
+          x = "\nYear of release\n",
+          y = "\nCount\n"
+        ) + 
+       theme(axis.text = element_text(size = 8, face = "plain"))
+```
+
