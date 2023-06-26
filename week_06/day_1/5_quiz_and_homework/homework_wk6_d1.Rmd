@@ -1,0 +1,165 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(janitor)
+library(gtools)
+titanic <- read_csv("data/titanic.csv")
+source("../../../../codeclan_work/week _06/day_1/prob.R")
+```
+
+```{r}
+titanic_new <- titanic %>% mutate(crew = if_else(class %in% c("1st", "2nd", "3rd"), FALSE, TRUE))
+
+```
+##  1.1 The Titanic
+
+Calculate the conditional probabilities prob(survived∣crew) and prob(survived∣passenger)to settle this dispute.
+
+Have a look at the distinct values of the class variable, this will tell you whether each individual was a passenger (1st, 2nd or 3rd class) or a member of the crew (treat restaurant staff as crew)
+
+Answer:
+Probability of crew surviving is 0.09.
+
+```{r}
+titanic_new %>% filter(crew == TRUE & survived == "yes") %>% 
+  summarise(p = n()/nrow(titanic))
+```
+Answer: Probability of passenger surviving is 0.226.
+
+```{r}
+
+titanic_new %>% filter(crew == FALSE & survived == "yes") %>% 
+  summarise(p = n()/ nrow(titanic))
+```
+1.2 Probability Consolidation Questions
+
+Question 1.
+If I roll a six-sided dice once, what is the probability of getting a number less than 5?
+
+event A: roll one of {1, 2, 3, 4}
+Answer: Prob(A) 4/6 = 2/3 = 0.6667
+
+```{r}
+rolldie(1)
+```
+
+Question 2.
+How many outcomes are there in the sample space of an experiment in which we toss three dice?
+
+```{r}
+s_three_dice <- rolldie(3)
+s_three_dice
+```
+Answer: 216 outcomes
+
+Question 3
+
+In an experiment where we roll four dice:
+
+- How many outcomes are in the event where the total of the four dice equals 5
+, 6 or 7)?
+
+1,1,1,2 = 5
+
+1, 1, 2, 2 = 6
+1, 1, 1, 3 = 6
+
+1, 1, 1, 4 = 7
+1, 1, 2, 3 = 7
+1, 2, 2, 2 = 7
+
+Answer: 6 different outcomes
+
+```{r}
+s_four_dice <- rolldie(4)
+s_four_dice
+
+s_four_dice %>% filter(X1+X2+X3+X4 == 5 | X1+X2+X3+X4 == 6 | X1+X2+X3+X4 == 7) %>% 
+  summarise(p = n()/nrow(s_four_dice))
+
+```
+
+what is the probability of this event?
+
+Answer: Probability of throwing 4 dice, where the sum equals 5, 6 or 7 is 0.0262.
+
+
+what assumptions do we apply in answering part ii?
+
+we're assuming that order in which numbers are thrown doesn't matter.
+Hint
+For part i, rowSums(.) may help you setup up the necessary random variable total (or you can use pivot_longer())
+
+```{r}
+s_four_dice %>% filter(rowSums(.) %in% c(5, 6, 7)) %>% 
+   summarise(p = n()/nrow(s_four_dice))
+```
+Question 4.
+Five chairs are placed in a row in a room, along with five people of differing height. The people sit down randomly on the chairs. What is the probability that they sit in order of decreasing height, left to right?
+
+Hint
+This is an arrangement where order matters. Of all the possible arrangements, how many are correct?
+
+```{r}
+height <- c( 1.2, 1.3, 1.4, 1.5, 1.6)
+
+sitting_order <- permutations(n = 5, r = 5, v = height, repeats.allowed = FALSE) %>% 
+  as_tibble()
+
+sitting_order %>% unite(height, c(V1:V5), sep = "_", remove = TRUE) %>% 
+filter(str_detect(height,"1.6_1.5_1.4_1.3_1.2")) %>% 
+  summarise(n()/nrow(sitting_order))
+  
+ 
+
+```
+Answer: The probability is 1/120 = 0.0083
+
+Question 5:
+```{r}
+s_six_dice <- rolldie(6)
+```
+
+
+I roll six dice:
+
+What is the probability I see the numbers 6, 5, 4, 3, 2 and 1 in order on the dice, left to right?
+
+1/46656
+
+
+
+
+```{r}
+
+s_six_dice %>% filter(isin(., c(6:1), ordered = TRUE)) %>% 
+  summarise(p = n()/nrow(s_six_dice))
+```
+what is the probability I see one each of the numbers 6, 5, 4, 3, 2 and 1 on the dice regardless of order?
+
+```{r}
+s_six_dice %>% filter(isin(., c(6:1), ordered = FALSE)) %>% 
+  summarise(p = n()/nrow(s_six_dice))
+```
+answer: 0.0154321
+
+Question 6.
+If I draw a single card from a 52-card deck, and it is black, what is the probability that its suit is spades?
+
+```{r}
+# 52 card deck - half of it is black, quarter of it are spades
+
+cards()
+
+```
+
+
+
+
+Hints
+Investigate the cards() function in the prob.R file, if you’d like to try this in R (make a deck without jokers).
+You could think about adding your own black_card random variable to the sample space, which would be TRUE if the suit is ‘Spade’ or ‘Club’, and FALSE otherwise.
+
