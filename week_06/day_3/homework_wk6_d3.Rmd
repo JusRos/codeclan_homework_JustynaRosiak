@@ -1,0 +1,229 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Task 1.
+Load the data again, clean_names(), and re-familiarise yourself with it
+
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(skimr)
+library(infer)
+ames <- clean_names(read_csv("data/ames.csv"))
+skim(ames)
+
+```
+
+Task 2.
+Investigate the distribution of lot_area. Is the distribution roughly normal? If not, what problems do you find?
+```{r}
+ames %>% 
+  ggplot(aes(x = lot_area))+
+  geom_histogram(colour  = "white", bins = 100)
+
+ames %>% 
+  summarise(
+   mean = mean(lot_area),
+   median = median(lot_area)
+  )
+```
+This distribution looks slightly skewed towards right. The difference between mean and median looks moderate.
+
+Task 3.
+Compute and visualise a bootstrap sampling distribution for the mean(lot_area) of the sold houses.
+one way:
+
+```{r}
+# bootstrap the sample
+
+
+bootstrap_resample_ames <- ames %>%
+  rep_sample_n(size = 2930, replace = TRUE, reps = 10000) %>% 
+  summarise(mean_lot_area = mean(lot_area))
+  
+bootstrap_resample_ames
+
+# let's plot it
+
+bootstrap_resample_ames %>% 
+  ggplot(aes(x=mean_lot_area)) +
+  geom_histogram(fill = "lightgreen", colour = "white")
+```
+  
+
+another way:
+
+```{r}
+infer_resample_ames <- ames %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 10000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+infer_resample_ames %>% 
+  ggplot(aes(x = stat))+
+  geom_histogram(fill = "lightgreen", colour = "white")
+```
+
+Task 4.
+Use your bootstrap distribution to calculate a 95%
+ CI for mean(lot_area), and visualise it on the distribution 
+
+```{r}
+
+```
+```{r}
+
+# calculate Confidence intervals 
+lot_area_ci_95 <- infer_resample_ames %>% 
+  get_confidence_interval(level = 0.95, type = "percentile")
+
+lot_area_ci_95
+```
+visualise:
+
+```{r}
+infer_resample_ames %>% 
+  visualise(bins = 20) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+
+```
+
+Task 5.
+You would like to know the mean(lot_area) of the sold houses with higher confidence. Calculate the 99%
+ CI for this variable (you can re-use your bootstrap distribution from above). Is it narrower or broader than the 95%
+ CI? Does that make sense?
+ 
+```{r}
+lot_area_ci_99 <- infer_resample_ames %>% 
+  get_confidence_interval(level = 0.99, type = "percentile")
+
+# visualise
+
+infer_resample_ames %>% 
+  visualise(bins = 20) +
+  shade_confidence_interval(endpoints = lot_area_ci_99)
+```
+ 
+ Broader, Yes it makes sense as if CI is higher then it means that 99% of all values has to fall within the top and bottom bound.
+
+Task 6.
+Calculate the point estimate of the mean(lot_area)
+```{r}
+
+# point estimate
+mean_lot_area <- infer_resample_ames %>% 
+  summarise(
+    mean = mean(stat))
+mean_lot_area
+```
+ Extension
+
+
+Task 1.
+Calculate a point estimate and 95%
+ CI for the proportion of houses in the data built before 1920. Does the number of reps you use matter? [Investigate reps from 200
+ up to 50000
+, memory of your laptop permitting].
+## 200 reps
+```{r}
+infer_resample_before1920 <-  ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 200, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 20) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+  
+```
+##500 reps
+
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 500, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+##1000 reps
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 1000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+## 10000
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 10000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+##25000 reps
+
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 25000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+##35000 reps
+
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 35000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+##45000 reps
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 45000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+## 50000 reps
+```{r}
+infer_resample_before1920 <- ames %>% 
+filter(year_built < 1920) %>% 
+  specify(response = lot_area) %>% # specify the variable of interest
+  generate(reps = 50000, type = "bootstrap") %>% # generate the replicate resamples
+  calculate(stat = "mean")
+
+infer_resample_before1920 %>% 
+  visualise(bins = 25) +
+  shade_confidence_interval(endpoints = lot_area_ci_95)
+```
+
