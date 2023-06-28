@@ -20,19 +20,20 @@ Calculate the conditional probabilities prob(survivedâˆ£crew) and prob(survivedâ
 
 Have a look at the distinct values of the class variable, this will tell you whether each individual was a passenger (1st, 2nd or 3rd class) or a member of the crew (treat restaurant staff as crew)
 
+Was meant to calculate against the crew not everybody on the boat
 Answer:
 Probability of crew surviving is 0.09.
 
 ```{r}
 titanic_new %>% filter(crew == TRUE & survived == "yes") %>% 
-  summarise(p = n()/nrow(titanic))
+  summarise(p = n()/nrow(titanic_new))
 ```
 Answer: Probability of passenger surviving is 0.226.
 
 ```{r}
 
 titanic_new %>% filter(crew == FALSE & survived == "yes") %>% 
-  summarise(p = n()/ nrow(titanic))
+  summarise(p = n()/ nrow(titanic_new))
 ```
 1.2 Probability Consolidation Questions
 
