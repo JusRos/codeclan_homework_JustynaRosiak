@@ -65,7 +65,7 @@ null_distribution %>%
   shade_p_value(obs_stat = observed_stats, direction = "right")
 
 ```
-Answer: The p value has been rounded to 0 and as p value is lower than significance level of 0.05 this provided enough evidence to reject H0. The mean sleep_total differs from the Jabberwockie's sleep avearage.
+Answer: The p value has been rounded to 0 and as p value is lower than significance level of 0.05 this provided enough evidence to reject H0. We have enough evidence to say that the mean sleep length of animals differs from jabberwockie's length of sleep of 7 hours.
 
 **Question 3.**
 
@@ -75,7 +75,7 @@ Using two sample test - independent
 
 *α = 0.05*
 
-**H0:** The mean sleep duration of omnivores is equal  or less to the mean sleep duration of herbivores.
+**H0:** The mean sleep duration of omnivores is equal or less to the mean sleep duration of herbivores.
 
 µomni <= µherbi
 
@@ -127,7 +127,7 @@ null_distribution <- herbi_omni %>%
 ```
 
 
-Answer: P_value is greater than the significance level of 0.05 and this is enough evidence to reject H1 in favour of H0. On average omnivores are sleeping less or the same as herbivores.
+Answer: Since p-value is greater than the significance level of 0.05 , we fail to reject H0. There is not enough evidence to say that the mean sleep duration of omnoivores is greater than the mean duartion of sleep herbivores. 
  
 
 **Question 4.** 
@@ -138,7 +138,7 @@ one sample - proportions
 
 *α = 0.05*
 
-**H0:** Population of domesticated anmials is less or equals to 5% of the whole population of animals.
+**H0:** Population of domesticated animals is less or equals to 5% of the whole population of animals.
   (is_domesticated <= 0.05)
   
 **H1:** Population of domesticated animals is greater than 5% of the whole population of animals.
@@ -171,17 +171,17 @@ observed_stats <- domesticated %>%
 
 null_distribution %>% 
   visualise()+
-  shade_p_value(obs_stat = observed_stats, direction = "both")
+  shade_p_value(obs_stat = observed_stats, direction = "right")
 
 # calculate p-value
 
 p_value <- null_distribution %>% 
-  get_p_value(obs_stat = observed_stats, direction = "both")
+  get_p_value(obs_stat = observed_stats, direction = "right")
 
  p_value         
             
 ```
-Answer: P-value is less than significant value of 0.05, therefore we have enough evidence for rejecting H0 in favour of H1. Based on data, the population of domesticated animals is greater than 5% of the animal types population.
+Answer: Since p-value is greater than significant value of 0.05, therefore we do not have enough evidence for rejecting H0. In other words we do not have enough evidence to say that population of domesticated animals is greater than 5%.
 
 ### 1.2 Defining the Hypothesis
 
@@ -274,13 +274,13 @@ As the p-value is greater than the significance level of 0.05 we do not have eno
 **Question 2.**
 
 Website company problem. Significance level: 0.01, p-value: 0.006
-As the p-value is significantly lower than the significance level that was set up at 0.01, we have enough evidence to reject H0.In other words - the website users wre more likely to click on the banner positioned at the top of the website than when it was positioned on the right hand side.
+As the p-value is significantly lower than the significance level that was set up at 0.01, we have enough evidence to reject H0.In other words - the results suggest that the website users were more likely to click on the banner positioned at the top of the website than when it was positioned on the right hand side.
 
 
 **Question 3.**
 
 Manufacturing company problem. Significance level: 0.05, p-value: 0.55
 
-As the p-value is slightly higher than the significance level we set up at 0.05, we do not have suficient evidence to reject H0. In other words - the results suggest that the parts do not differ significantly from 145mm width on average. It is possible that any observed differences could be teh result of chance or random variation.
+As the p-value is slightly higher than the significance level we set up at 0.05, we do not have sufficient evidence to reject H0. In other words - we do not have enough evidence to say that the parts did differ significantly from 145mm width on average. It is possible that any observed differences could be the result of chance or random variation.
 
 
