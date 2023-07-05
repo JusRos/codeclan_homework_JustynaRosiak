@@ -1,0 +1,127 @@
+---
+title: "R Notebook"
+output: html_notebook
+code_folding: hide
+---
+
+```{r}
+library(tidyverse)
+library(tsibbledata)
+nyc_bikes_df <- nyc_bikes
+```
+## 1. Documentation
+
+**Domain knowledge (1.1)**
+
+Citi Bike is the bike share program with 25,000 bikes and over 1,500 stations across Manhattan, Brooklyn, Queens, the Bronx, Jersey City, and Hoboken. It was launched in May 2013 and has become a very important part of transportation network in New York. It offers a variety of bike hire plans which range from single use to annual memberships with an access to bikes and scooters all over the USA. 
+The bikes can be unlocked from one city station and returned into the other. People tend to use the bike share system for a variety of reasons - commuting to the place of work or school or to run errands to name just few.
+As City Bike offers a 24 hours a day, 7 days per week and 365 days a year access it offers an excellent flexibility to its users. Since its launch in 2013 it has grown in popularity and in July 2020 Citi Bike riders took their 100 Millionth trip.
+
+**Data quality and data bias (1.6)**
+
+The data used in this report has been provided by Citi Bike NYC. It is a sample  of the usage of 10 bikes across 2018. Each bike has a unique identifier and the data provided includes details corresponding with each trip( e.g. trips start and end location and time) together with customers year or birth, gender and bike usage type. 
+
+The data has been anonymised, which removes the risks of breaching data privacy for any of the service users. 
+There is no information about how the data has been chosen for the sample, therefore it is hard to assess whether the sample selection process has not introduced any intentional or unintentional bias. The sample is also relatively small as it is limited to the usage of 10 bikes only and this poses a risk of the sample not being representative of the whole population. This in turn leads to the another challenge - related to statistical reliability.
+
+There may be a need to run further analysis on a bigger sample to confirm the initial findings from this report.
+
+
+
+Please describe what steps you plan to take to complete this report.
+
+**Business requirements (1.2)**
+
+In the report I am hoping to find the answer to the following questions:
+- What is the pattern of bike hires over time (e.g. within a year, month, week, or day)?
+- Who is an average customer of a NYC Citi Bike?
+- Are there any patterns in the bike hires over 2018? If yes, what are they? And what conclusions can we draw from our findings?
+
+
+
+- Do bike hire patterns differ between bike rider demographics? (e.g. gender, type of trip, age)
+
+- Any other insights??
+
+For every visualisation you create, consider whether and how it can provide actionable insights to the business (in this case NYC Citi Bike, a bike share operator) and how it relates to key performance indicators (in this case the overall objective is to increase bike hires). Also, remember to include a description and interpretation of each plot so as to explain the context and insights.
+
+
+**Business processes and data flow (1.3)**
+
+
+**Data visualisation as a tool for decision-making (1.4)**
+
+**Data types (1.5)**
+
+
+## 2. Data cleaning
+
+**Preparing data for visualisation (1.7)**
+
+```{r}
+library(tidyverse)
+library(tsibbledata)
+library(tsibble)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(lubridate)
+library(leaflet)
+library(skimr)
+
+
+nyc_bikes_df <- nyc_bikes
+
+# addding colour scheme for all visualisations to keep them uniform
+
+colour_scheme <-  c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+```{r}
+# dividing start time into 4 columns year, month, day and weekday 
+nyc_bikes_df <- nyc_bikes_df %>% mutate(year = year(start_time),
+                        month = month(start_time, label = TRUE, abbr = TRUE),
+                        day = day(start_time, label = TRUE, abbr = TRUE),
+                        weekday = wday(start_time, label = TRUE, abbr = FALSE)
+                        )
+                       
+# add a date column  
+ 
+nyc_bikes_df <- nyc_bikes_df %>% mutate(date = as_date(ymd_hms(start_time))) 
+
+
+# add age column and change to NA those who's age is over 126 (the highest age recorded so far in history)
+
+nyc_bikes_df <- nyc_bikes_df %>% mutate(age = 2018 - birth_year) %>% mutate(age = if_else(age > 126, NA, age))
+
+# divide starting time to hour, minute and second columns
+nyc_bikes_df <- as.tibble(nyc_bikes_df %>% 
+      mutate(hour = hour(hire_length),
+             minute = minute(hire_length), 
+             second = second(hire_length)) %>% 
+      mutate(length_minutes = round(hour * 60 + minute + second/60)))
+
+
+```
+
+
+
+
+## 3. Data visualisation
+
+**Process and design (2.1, 2.7, 2.8, 2.9)**
+
+Briefly describe your data visualisation process.
+
+For example: First, I investigated variables of interest with simple single-variable distribution plots. Then I plotted variables of interest to the business against each other to see if any patterns were present in the data. After selecting key visualisations I ensured these were clearly portraying the message I wanted to convey, were aesthetically pleasing, as well as accurate and not misleading. All visualisations were made in RStudio using the ggplot package.
+
+Visualisations (2.2, 2.3, 2.4, 2.5, 2.6)
+For each plot you include in your report, please:
+
+Describe the visualisation: what kind of visualisation is it and what information does it contain?
+
+For example: This scatter plot shows the relationship between age (years) and spending (GBP), where the red line represents a line of best fit, and the shaded area represents the 95% confidence interval.
+
+Why is this visualisation important to the business? What does it mean/how can it be used?
+
+For example: The highlighted relationship between age and spending can be used by the business to create better targeted advertisements for different age groups as well as make better predictions of customer behaviour.
