@@ -1,2 +1,9 @@
 file_to_ignore.txt
 .Rproj.user
+australia_customers.csv
+france_customers.csv
+germany_customers.csv
+new_zealand_customers.csv
+spain_customers.csv
+uk_customers.csv
+usa_customers.csv

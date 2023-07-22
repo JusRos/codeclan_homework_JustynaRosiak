@@ -1,0 +1,167 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(skimr)
+# read in data
+cancer_1 <- read_csv("data/opendata_inc1721comb_hb.csv")
+cancer_2 <- read_csv("data/opendata_inc9721_hb.csv")
+cancer_2
+cancer_2 %>% distinct(HB) # 14 different heath boards S000016 is NHS borders
+hb <- read_csv("data/health_board.csv") %>% select(HB, HBName)
+```
+```{r}
+#cancer cases by health board - glasgow and lothian have the highest number of cases registered, nhs borders has the lowest number from all mainland HB. all probably down to population size, so it is important to look at the standardised incidence ratio.
+
+cancer_2 <- left_join(cancer_2, hb, by = "HB")
+cancer_2 %>% filter(CancerSite == "All cancer types" & Sex != "All" & Year == 2008) %>% 
+  ggplot(aes(x = HBName, y = IncidencesAllAges, group = Year))+
+  geom_col()+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+# 
+  # scale_x_continuous(breaks = c(1997, 1999, 2001,2003, 2005, 2007, 2009, 2011, 2013, 2015, 2017, 2019, 2021))
+```
+
+
+
+```{r}
+cancer_2 %>%filter(CancerSite == "All cancer types" & HB == "S08000016" & Sex != "All") %>% 
+  ggplot(aes(x = Year, y = IncidencesAllAges, group = Sex, colour = Sex))+
+  geom_line(size =1)+
+  scale_x_continuous(breaks = c(1997, 1999, 2001,2003, 2005, 2007, 2009, 2011, 2013, 2015, 2017, 2019, 2021))
+```
+
+```{r}
+cancer_2 %>% 
+  filter(CancerSite == "All cancer types" & HB == "S08000016" & Sex != "All"& IncidencesAllAges >= 50 ) %>% 
+  ggplot(aes(x = Year, y = IncidencesAllAges, group = Year))+
+  geom_boxplot()
+```
+
+# now I need to find out what kind of cancer seems to be more frequently diagnosed and if there's any correlation between age and gender
+
+```{r}
+#not_summarised <- 
+cancer_2 %>% 
+  filter(CancerSite != "All cancer types" & 
+           CancerSite != "All brain and CNS tumours (malignant and non-malignant)" & 
+           CancerSite != "Leukaemias" & 
+           Sex != "All") %>% 
+  group_by(CancerSite, Year) %>%
+  summarise(cases_summary = sum(IncidencesAllAges), .groups = "drop") %>% 
+  filter(Year == 2006) %>% 
+  arrange(desc(cases_summary)) %>% 
+  head(n = 10) %>% 
+  
+  ggplot(aes(x = CancerSite, y = cases_summary, ))+
+  geom_col()
+  
+```
+
+
+
+```{r}
+#lets check what cancers seem to be diagnosed more frequently - look at incidence level over 300
+
+
+cancer_2 %>%  filter(IncidencesAllAges >= 50 & HBName == "NHS Borders" & CancerSite != "All cancer types" & Sex != "All") %>% group_by(CancerSite) %>% #
+  ggplot(aes(x = Year, y = IncidencesAllAges, colour = CancerSite))+
+  geom_line()+
+  facet_wrap(~ CancerSite)
+  
+```
+
+```{r}
+# let's investigate 4 the most commonly diagnosed types of cancer 
+
+not_summarised  <- cancer_2 %>% filter(CancerSite != "All cancer types" & CancerSite !="All brain and CNS tumours (malignant and non-malignant)"& CancerSite!= "Leukaemias" & Sex != "All")
+
+not_summarised %>%
+  filter(CancerSite == "Non-melanoma skin cancer" | 
+           CancerSite == "Basal cell carcinoma of the skin" | 
+           CancerSite == "Trachea, bronchus and lung" | 
+           CancerSite == "Breast") %>% 
+  group_by(CancerSite, Year, Sex) %>% summarise(sum_cases = sum(IncidencesAllAges)) %>% 
+  ggplot(aes(x = Year, y = sum_cases, colour = Sex))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(~ CancerSite)
+```
+
+```{r}
+
+
+```
+
+look at cancers that those 5 cancer types in the last 5 years and see the relationships from demographic  point of view.
+
+```{r}
+
+cancer_1_short <- cancer_1 %>% select(HB, CancerSite, Sex, Year, IncidencesAgeUnder5, IncidencesAge10To14, IncidencesAge5To9, IncidencesAge15To19, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge25To29, IncidencesAge30To34, IncidencesAge35To39, IncidencesAge40To44, IncidencesAge45To49, IncidencesAge50To54, IncidencesAge55To59, IncidencesAge60To64, IncidencesAge65To69, IncidencesAge70To74, IncidencesAge75To79, IncidencesAge80To84, IncidencesAge85AndOver)
+
+cancer_pivot <- cancer_1_short %>% pivot_longer(cols = starts_with("Incidences"), names_to = "age", values_to = "cases_count")
+
+cancer_pivot <- cancer_pivot %>% mutate(age = str_remove_all(age, "Incidences"))
+cancer_pivot
+```
+```{r}
+
+
+```
+
+```{r}
+
+# Noticed people over 40 tend to be diagnosed with these types of cancer more often
+
+cancer_pivot %>% 
+  distinct(age)
+
+cancer_pivot <- cancer_pivot %>% 
+  mutate(age = case_when(
+    age == "AgeUnder5" ~ "0-5",
+    age == "Age5To9" ~ "5-9",
+    age == "Age10To14" ~ "10-14",
+    age == "Age15To19" ~ "15-19", 
+    age == "Age20To24" ~ "20-24",
+    age == "Age25To29" ~ "25-29",
+    age == "Age30To34" ~ "30-34",
+    age == "Age35To39" ~ "35-39",				
+    age == "Age40To44" ~ "40-44",		
+    age == "Age45To49" ~ "45-49",
+    age == "Age50To54" ~ "50-54",				
+	  age == "Age55To59" ~ "55-59",
+    age == "Age60To64" ~ "60-64",
+    age == "Age65To69" ~ "65-69",
+    age == "Age70To74" ~ "70-74",
+    age == "Age75To79" ~ "75-79",
+    age == "Age80To84" ~ "80-84",
+    age == "Age85AndOver" ~ "85+",
+    TRUE ~ age
+    ))
+```
+
+```{r}
+# what age group is being diagnosed with the above mentioned cancers more often in the last 5 years
+
+cancer_pivot %>% filter(Sex != "All" & 
+                          HB == "S08000016") %>% 
+ filter(CancerSite == "Non-melanoma skin cancer" | 
+           CancerSite == "Basal cell carcinoma of the skin" | 
+           CancerSite == "Prostate" | 
+           CancerSite == "Breast"| 
+        CancerSite == "Squamous cell carcinoma of the skin"|
+          CancerSite == "Colorectal cancer") %>%
+  group_by(CancerSite, Sex) %>% 
+  ggplot(aes(x = age, y = cases_count, group = CancerSite, fill = Sex))+
+  geom_col(position = "dodge", colour = "white")+
+  theme(
+    axis.text.x = element_text(angle = 90)
+  )+ 
+  facet_wrap( ~ CancerSite)
+```
+

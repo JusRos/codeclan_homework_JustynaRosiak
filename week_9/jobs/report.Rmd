@@ -1,0 +1,255 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Business requirements
+
+In the report I am hoping to find out more about the incidence of cancer in NHS Borders. 
+The Key Perfomance Indicators I will be looking at are the number of new cases(incidences) recorded between 1997 - 2022 and see if there are any relationships related to demographics of the NHS Borders population. 
+
+## Data used
+
+Data for this report came from NHS open data published on https://www.opendata.nhs.scot/.
+This analysis is based  on the following reports: "opendata_inc1721comb_hb" and also "opendata_inc_9721_hb". The data has already been cleaned and summarised.
+
+## Software and libraries used
+
+The report has been created in RStudio using R 4.3.0 and tidyverse package.
+
+## Additional data cleaning and wrangling
+
+I have selected columns from the reports that were corresponding with the information I found crucial in order to explore KPIs. I have also pivoted data including demographics related to age. 
+
+```{r}
+library(tidyverse)
+
+colour_scheme <-  c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cancer_1 <- read_csv("data/opendata_inc1721comb_hb.csv")
+cancer_2 <- read_csv("data/opendata_inc9721_hb.csv")
+hb <- read_csv("data/health_board.csv") %>% select(HB, HBName)
+
+# tidying up columns
+cancer_1_short <- cancer_1 %>% select(HB, CancerSite, Sex, Year, IncidencesAgeUnder5, IncidencesAge10To14, IncidencesAge5To9, IncidencesAge15To19, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge25To29, IncidencesAge30To34, IncidencesAge35To39, IncidencesAge40To44, IncidencesAge45To49, IncidencesAge50To54, IncidencesAge55To59, IncidencesAge60To64, IncidencesAge65To69, IncidencesAge70To74, IncidencesAge75To79, IncidencesAge80To84, IncidencesAge85AndOver)
+
+# pivoting age incidences into rows
+cancer_pivot <- cancer_1_short %>% pivot_longer(cols = starts_with("Incidences"), names_to = "age", values_to = "cases_count")
+# removing word "Incdences from each age row
+cancer_pivot <- cancer_pivot %>% mutate(age = str_remove_all(age, "Incidences"))
+```
+
+```{r}
+
+# add HB names onto the cancer_2
+cancer_2 <- left_join(cancer_2, hb, by = "HB")
+
+```
+
+### 1. At first I wanted to see if NHS Borders has lower or higher cancer incidence rate that other Scottish Health Boards.
+ 
+```{r}
+ # explore where NHS Borders sits in comparison to other Health Boards In terms of number of cancer Incidences
+
+cancer_2 %>% 
+  filter(CancerSite == "All cancer types" & Sex != "All" & Year == 2008) %>% 
+  ggplot(aes(x = HBName, y = IncidencesAllAges, group = Year, fill = HBName))+
+  geom_col()+
+  theme_minimal()+
+  labs(
+    title = "\nCancer Incidence According to Health Board\n",
+    x = "\nHealth Board\n", 
+    y = "\nCount\n")+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+  axis.text.y = element_text(size = 14),
+    legend.position = "none",
+    title = element_text(face = "bold", size = 16))
+   
+```
+It turns out that NHS Borders has 4th lowest number of new cancers recorded - this is very likely to be linked with the size of the population living in NHS Borders health board.
+
+### 2. Then I checked how how caner incdence rate looked over time for NHS Borders.
+
+```{r}
+cancer_2 %>%filter(CancerSite == "All cancer types" & HB == "S08000016" & Sex != "All") %>% 
+  ggplot(aes(x = Year, y = IncidencesAllAges, group = Sex, colour = Sex))+
+  geom_line(size =1)+
+  scale_x_continuous(breaks = c(1997, 1999, 2001,2003, 2005, 2007, 2009, 2011, 2013, 2015, 2017, 2019, 2021))+
+   theme_minimal()+
+  labs(
+    title = "\nCancer Incidence in NHS Borders 1997-2021\n",
+    x = "\nYear\n", 
+    y = "\nCount\n")+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+  axis.text.y = element_text(size = 14),
+    
+    title = element_text(face = "bold", size = 16))
+```
+
+We can see the rise in the number of incidences being recorded across time, for both genders with a significant dip in 2020 for males. It is interesting to see that teh diagnosis of cancer in females was at a similar level between 2018 and 2020.
+
+### 3. Afterwards I checked what cancer types were diagnosed more frequently in NHS Borders and focused only on those that had more than 50 cases recorded per year.
+
+```{r}
+# 8 types of cancers that have been diagnosed more frequently in NHS Borders over time (at lest 50 times or more per year)
+
+cancer_2 %>%  
+  filter(IncidencesAllAges >= 50 & HBName == "NHS Borders" & CancerSite != "All cancer types" & Sex != "All") %>%
+  group_by(CancerSite) %>% #
+  ggplot(aes(x = Year, y = IncidencesAllAges, colour = CancerSite))+
+  geom_line()+
+  facet_wrap(~ CancerSite)+
+  theme_minimal()+
+  labs(
+    title = "\nCancers diagnosed more frequently\n",
+    x = "\nYear\n", 
+    y = "\nCount\n")+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+  axis.text.y = element_text(size = 10),
+    legend.position = "none",
+    title = element_text(face = "bold", size = 16))
+
+```
+We can notice that colorectal cancer, trachea, broncus and lung cancer, and Carcinoma in situ of the cervix uteri seem to oscillate around the same level across time, so I will focus more on those cancers that show a growing trend in terms of number of cases over time -  skin cancers, breast and prostate cancers and explore them further.
+
+
+```{r}
+# main focus from now on will be on the past 5 years only - 2017-2022
+cancer_1_short <- cancer_1 %>% select(HB, CancerSite, Sex, Year, IncidencesAgeUnder5, IncidencesAge10To14, IncidencesAge5To9, IncidencesAge15To19, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge20To24, IncidencesAge25To29, IncidencesAge30To34, IncidencesAge35To39, IncidencesAge40To44, IncidencesAge45To49, IncidencesAge50To54, IncidencesAge55To59, IncidencesAge60To64, IncidencesAge65To69, IncidencesAge70To74, IncidencesAge75To79, IncidencesAge80To84, IncidencesAge85AndOver)
+
+cancer_pivot <- cancer_1_short %>% pivot_longer(cols = starts_with("Incidences"), names_to = "age", values_to = "cases_count")
+
+cancer_pivot <- cancer_pivot %>% mutate(age = str_remove_all(age, "Incidences"))
+cancer_pivot
+
+#tidy up the age column
+
+cancer_pivot <- cancer_pivot %>% 
+  mutate(age = case_when(
+    age == "AgeUnder5" ~ "0-5",
+    age == "Age5To9" ~ "5-9",
+    age == "Age10To14" ~ "10-14",
+    age == "Age15To19" ~ "15-19", 
+    age == "Age20To24" ~ "20-24",
+    age == "Age25To29" ~ "25-29",
+    age == "Age30To34" ~ "30-34",
+    age == "Age35To39" ~ "35-39",				
+    age == "Age40To44" ~ "40-44",		
+    age == "Age45To49" ~ "45-49",
+    age == "Age50To54" ~ "50-54",				
+	  age == "Age55To59" ~ "55-59",
+    age == "Age60To64" ~ "60-64",
+    age == "Age65To69" ~ "65-69",
+    age == "Age70To74" ~ "70-74",
+    age == "Age75To79" ~ "75-79",
+    age == "Age80To84" ~ "80-84",
+    age == "Age85AndOver" ~ "85+",
+    TRUE ~ age
+    ))
+```
+
+### 4. Skin Cancers and dempographis 2017 - 2022.
+
+```{r}
+#select NHS Borders, 
+cancer_pivot %>%  
+  filter(HB == "S08000016" & 
+         Sex != "All") %>% 
+  filter(CancerSite == "Non-melanoma skin cancer" | 
+         CancerSite == "Basal cell carcinoma of the skin" | 
+        CancerSite == "Squamous cell carcinoma of the skin") %>%
+  mutate(CancerSite = case_when(
+    CancerSite == "Non-melanoma skin cancer" ~ "Non_melanoma",
+    CancerSite == "Basal cell carcinoma of the skin" ~ "Basal cell carcinoma",
+    CancerSite == "Squamous cell carcinoma of the skin" ~ "Squamous cell carcinoma"
+  )) %>% 
+  mutate(age = case_when( # group cases 39 and under together
+   age == "0-5" ~ "39 and under",
+   age == "5-9" ~ "39 and under",
+   age == "10-14" ~ "39 and under",
+   age == "15-19" ~ "39 and under",
+   age == "20-24" ~ "39 and under",
+   age == "25-29" ~ "39 and under",
+   age == "30-34" ~ "39 and under",
+   age == "35-39" ~ "39 and under",
+   age == "40-44" ~ "40-49",
+   age == "45-49" ~ "40-49",
+   age == "50-54" ~ "50-59",
+   age == "54-59" ~ "50-59",
+   age == "60-64" ~ "60-69",
+   age == "65-69" ~ "60-69",
+   age == "70-74" ~ "70-79",
+   age == "75-79" ~ "70-79",
+   age == "80-84" ~ "80+",
+   age == "85+" ~ "80+",
+   TRUE ~ age)) %>%
+  group_by(Sex, age, CancerSite) %>% 
+  summarise(cases_sum = sum(cases_count), .group = "drop") %>%
+  ggplot(aes(x = age, y = cases_sum, fill = Sex))+
+  geom_col(position = "dodge")+
+  theme(
+    axis.text.x = element_text(angle = 90)
+  )+
+  facet_wrap( ~ CancerSite)+theme_minimal()+
+  labs(
+    title = "\nSkin Cancers According to Age and Gender\n",
+    x = "\nAge\n", 
+    y = "\nCount\n")+
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 10),
+  axis.text.y = element_text(size = 10),
+  title = element_text(face = "bold", size = 16))
+  
+```
+
+We can notice that it is very rare for people under 40 to be diagnosed with any of the three types of cancers and the risk of being diagnosed with any of them increases with age. Malews ten to be more prone to skin cancer, especially if they are aged 70 or over.
+
+### 5. Breast and Prostate Cancers: 2017-2022
+
+```{r}
+cancer_pivot %>%  filter(HB == "S08000016" & 
+                           CancerSite != "All cancer types" & 
+                           Sex != "All",
+                           CancerSite == "Prostate" | 
+                           CancerSite == "Breast") %>% 
+  mutate(age = case_when(
+   age == "0-5" ~ "39 and under",
+   age == "5-9" ~ "39 and under",
+   age == "10-14" ~ "39 and under",
+   age == "15-19" ~ "39 and under",
+   age == "20-24" ~ "39 and under",
+   age == "25-29" ~ "39 and under",
+   age == "30-34" ~ "39 and under",
+   age == "35-39" ~ "39 and under",
+   TRUE ~ age)) %>% 
+  group_by(age, CancerSite, Sex) %>% 
+  summarise(cases_sum = sum(cases_count), .group = "drop") %>%
+  ggplot(aes(x = age, y = cases_sum, group = CancerSite, fill = Sex))+
+  geom_col(colour = "white")+
+  theme(
+    axis.text.x = element_text(angle = 90)
+  )+ 
+  facet_wrap( ~ CancerSite)+
+  theme_minimal()+
+  labs(
+    title = "\nBreast and Prostate Cancers 
+According to Age and Gender\n",
+    x = "\nYear\n", 
+    y = "\nCount\n")+
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 10),
+  axis.text.y = element_text(size = 10),
+  title = element_text(face = "bold", size = 16))
+```
+
+These types of cancers are understandably gender related and we can notice that the risk of being diagnosed with breast cancer increases from age 45 and stays at fairly steady level until the age of 80, and the risk of prostate cancer increases from the age of 55 and over with  the peak around age 65-75
+
+## Conclusions
+
+The cancer incidence rate in NHS Borders is showing a rising trend over the past 25 years. The types of cancers that have been diagnosed more often are linked to skin, breast and prostate. Also the risk of being diagnoses with any of these cancers is related with age. In terms of predicting the provision required it is also important to do further research related to length of treatment depending on the age and gender of a patient diagnosed and recovery rate. 
+We also do not know if the increased number of incidences ha been linked to better diagnostics at earlier stage or if there are some other factors impacting the number of new cases. 
+We can't alos forget that this report only focuses on 5 most commonly diagnosed cancers but there may be other types of cancer that require more complex and lengthy treatment as they are less common and occur more often among younger age groups.

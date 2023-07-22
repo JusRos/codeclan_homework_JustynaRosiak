@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(tsibbledata)
+library(tsibble)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(lubridate)
+library(leaflet)
+
+nyc_bikes_df <-read_csv("..//bikes_project/nyc_bikes_df")
+```
+
+```{r}
+start_stations <- nyc_bikes_df %>% as_tibble(select(start_station, start_lat, start_long)) %>% group_by(start_station) %>% summarise(start_long = first(start_long),
+                                                                                                                                     start_lat = first(start_lat))
+leaflet(start_stations) %>% 
+    addTiles() %>% 
+    addMarkers(
+      lng = ~ start_long, 
+      lat = ~ start_lat, 
+      clusterOptions = markerClusterOptions(),
+          icon = icons(iconUrl = "https://play-lh.googleusercontent.com/nU9hlehhCfKL3UVhtOVnKJIRU3967x2ivi5m4Ny5VDY2vcDTwK2_b_KLGpnx1C-alWU",iconWidth = 30, iconHeight = 30), label = ~start_station)
+```
+

@@ -1,0 +1,163 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(skimr)
+library(lubridate)
+
+```
+
+```{r}
+age_and_sex <- read_csv("..//data/inpatient_and_daycase_by_nhs_board_of_treatment_age_and_sex.csv")
+
+age_and_sex <- age_and_sex %>% 
+  filter(!is.na(HBQF) & AdmissionType == "Elective Inpatients" | AdmissionType == " Elective Emergency Inpatients"| AdmissionType == "Transfer")
+
+
+```
+
+
+```{r}
+skim(age_and_sex)
+
+```
+
+```{r}
+age_and_sex %>% group_by(AdmissionTypeQF) %>% summarise(n())
+```
+let's plot the average length of stay per age group over time
+
+```{r}
+age_and_sex %>% filter(Age == "0-9 years") %>% 
+  ggplot(aes(x = Quarter, y = AverageLengthOfStay, group = Sex, colour = Sex)) +
+  geom_point()+
+  geom_line()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+Average length of stay male/female, age by quarter of a year?
+
+
+```{r}
+age_and_sex %>% 
+  ggplot(aes(x = ))
+```
+
+```{r}
+head(age_and_sex)
+tail(age_and_sex)
+```
+```{r}
+age_and_sex %>% distinct(AdmissionType)
+
+age_and_sex %>% distinct(HB)
+```
+
+Start Q4 2017, finish Q4 2022, the data for 2022 Q4 is provisional (do we want to use it? how do we want to mention it on the dasboard in analysis)
+
+18 different Health Boards
+7 different admission types;
+Elective Inpatients				
+Emergency Inpatients				
+Transfers				
+All Day cases				
+All Inpatients				
+All Inpatients and Day cases				
+Not Specified
+
+```{r}
+age_and_sex %>% group_by(AdmissionType)
+```
+
+
+
+```{r}
+age_and_sex %>% filter(AdmissionType == "Not Specified") %>% group_by(HB) %>% summarise()
+```
+```{r}
+age_and_sex %>% filter(Quarter == "2021Q3") %>%  group_by(AdmissionType, Sex, Age)
+```
+
+```{r}
+
+# number of admissions depending on the admission type and age group - this time for 2021 only
+age_and_sex %>% filter(Quarter == "Q1" | Quarter == "Q4") %>% filter(Year == 2021) %>% 
+  ggplot(aes(x = Age, fill = AdmissionType))+
+  geom_bar(position = "dodge",colour = "white")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+```{r}
+age_and_sex <- age_and_sex %>% 
+mutate(Year = substr(Quarter, 1, 4),
+       Quarter_single = substr(Quarter, 5, 6))
+
+age_and_sex
+```
+```{r}
+age_and_sex %>% group_by(Year, Quarter_single) %>% summarise(count = n()) %>% 
+  ggplot(aes(x = Quarter_single, y = count, group = Year, colour = Year))+
+  geom_point()+
+  geom_line()
+```
+
+q1 and q4 for each year by sex
+
+```{r}
+age_and_sex %>% group_by(Year, Quarter_single, Sex, Age) %>% summarise(count = n()) %>% filter(Quarter_single == "Q1" | Quarter_single == "Q4") %>% 
+ggplot(aes(x = Quarter_single, y = count, fill = Age)) +
+  geom_col(position = "dodge", colour = "white")+
+  facet_wrap(~ Year)
+
+```
+
+
+```{r}
+age_and_sex %>% group_by(Year, Quarter_single, Sex, Age) %>% summarise(count = n()) %>% filter(Quarter_single == "Q1" | Quarter_single == "Q4") %>% 
+ggplot(aes(x = Age, y = Quarter_single , alpha = Year, fill = count)) +
+  geom_count()
+
+```
+
+```{r}
+age_and_sex %>% distinct(Location)
+```
+
+```{r}
+# add date column - transformed using lubridate
+age_and_sex <- age_and_sex %>% mutate(Date = as_date(yq(Quarter, quiet = FALSE, tz = NULL)))
+
+# plot it
+age_and_sex %>% group_by(Date, Age) %>% summarise(number_admissions = n()) %>% 
+  ggplot()+
+  geom_line(aes(x = Date, y = number_admissions, group = Age, colour = Age))+
+theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_x_date(date_breaks = "3 months", date_labels = "%b - %y")+
+  labs(
+    title = "Hospital Admissions by Age"
+  )
+
+```
+
+```{r}
+
+```
+```{r}
+age_and_sex %>% group_by(Date, Sex) %>% summarise(number_admissions = n()) %>% 
+  ggplot()+
+  geom_line(aes(x = Date, y = number_admissions, group = Sex, colour = Sex))+
+theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_x_date(date_breaks = "3 months", date_labels = "%b - %y")+
+  labs(
+    title = "Hospital Admissions by Gender"
+  )
+```
+
+plot the avg length of stay
+

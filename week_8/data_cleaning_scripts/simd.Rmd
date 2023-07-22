@@ -1,0 +1,188 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(skimr)
+library(leaflet)
+library(rgdal)
+
+simd <- read_csv("..//data/inpatient_and_daycase_by_nhs_board_of_treatment_and_simd.csv")
+hb_codes <- read_csv("../../../public_health_scotland_project/public_health_scotland_project/raw_data/lookup_tables/health-board_codes-_main.csv") 
+
+simd <- simd %>% filter(is.na(HBQF) & !is.na(LocationQF))
+
+hb_codes <- hb_codes %>% select(HB, HBName)
+
+simd <- left_join(simd, hb_codes, by = "HB") 
+
+skim(simd)
+simd <- simd %>% select(Quarter, HB, AdmissionType, SIMD, Episodes, LengthOfEpisode,AverageLengthOfEpisode, Stays, LengthOfStay, AverageLengthOfStay )
+# hospital_codes <- read_csv("../lookup_tables/current-hospital_codes.csv")
+# simd_postcodes <- read_csv("..//lookup_tables/SIMD+2020v2+-+postcode+lookup%232.csv")
+# health_b_geogr <- readxl::read_xlsx("../lookup_tables/health_board_lat_lon.csv.xlsx")
+# health_b <- readOGR(dsn = "../data/map_files/SG_NHS_HealthBoards_2019.shp",  layer = "SG_NHS_HealthBoards_2019")
+# # limit columns to postcode and quintile only
+# 
+# simd_postcodes <- simd_postcodes %>% select(Postcode, SIMD2020v2_Quintile) %>% mutate(SIMD = SIMD2020v2_Quintile)
+#   
+# hospital_codes <- hospital_codes %>% select(Location, Postcode)
+```
+
+```{r}
+simd %>% distinct(HB)
+```
+
+```{r} 
+# check SIMD per health board
+simd %>% group_by(HB, SIMD) %>% summarise(SIMD_per_HB = n()) %>% 
+  ggplot(aes(x = HB, y = SIMD_per_HB, fill = SIMD))+
+  geom_col()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+```{r}
+simd <- simd %>% select(Quarter, QuarterQF, Quarter, HB, HBQF,Location, LocationQF, AdmissionType, AdmissionTypeQF,SIMDQF, SIMD )
+```
+
+
+
+
+let's build a picture of the relationship between HB and SIMD
+
+# ```{r}
+# 
+# # joined simd with hospital codes by location to have corresponding postcodes, that I can check on SIMD database
+# 
+# new_simd <- left_join(simd, hospital_codes, by = "Location")
+# 
+# new_simd
+# 
+# # look for entries that do not include SIMD level and corresponding postcodes, e.g N101H
+# 
+# 
+# new_simd %>% distinct(Postcode)	
+# 
+# missing_postcodes <- new_simd %>% filter(!str_detect(Location, "^S0")) %>% distinct(Postcode)
+# 
+# missing <- new_simd %>% filter(is.na(SIMD))
+#   
+#   # left_join(missing_postcodes, simd_postcodes, by = "Postcode") %>%  mutate(SIMD = SIMD2020v2_Quintile) %>%  select(Postcode, SIMD)
+# 
+# 
+# # new <-new_simd %>% left_join(new_simd, missing, by = "Postcode")
+# 
+#  skim(new)
+# ```
+
+```{r}
+# Proportion of simd 1-5 per health board and per quarter
+
+simd <- simd %>%  mutate(Date = as_date(yq(Quarter, quiet = FALSE, tz = NULL)))
+
+
+simd %>% filter(HB == "S08000016") %>% 
+  group_by(SIMD, Date) %>% 
+  summarise(number_admissions = n()) %>% 
+  ungroup() %>% 
+  group_by(Date) %>% 
+  mutate(total_admissions = sum(number_admissions)) %>% 
+  mutate(proportion = number_admissions/total_admissions) %>% 
+  filter(!is.na(SIMD)) %>% 
+  
+  ggplot(aes(x = Date, y = proportion, fill = SIMD))+
+  geom_col()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_x_date(date_breaks = "3 months", date_labels = "%b - %y")
+
+  
+```
+```{r}
+simd %>% 
+  group_by(Quarter, SIMD) %>% 
+  summarise(number_admissions = n()) %>% 
+  filter(!is.na(SIMD)) %>% 
+  mutate(SIMD = as.factor(SIMD)) %>% 
+  ggplot()+
+  geom_line(aes(x = Quarter, y = number_admissions, group = SIMD, colour = SIMD), size = 1)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        )+
+  # scale_x_date(date_breaks = "3 months", date_labels = "%b - %y")+
+  scale_colour_manual(values = c("#A5d8DD", "#4cb5f5","#1C4E80", "#488A99", "#1F3F49" ))+
+  labs(
+    title = "Number of Hospital Admissions by SIMD" 
+  )
+  
+```
+
+
+```{r}
+
+simd %>% filter(HB == "S08000016") %>% #filtered by specific Health Board
+  group_by(Quarter, SIMD) %>% 
+  summarise(number_admissions = n()) %>% 
+  filter(!is.na(SIMD)) %>% 
+  mutate(SIMD = as.factor(SIMD)) %>% 
+  ggplot()+
+  geom_col(aes(x = Quarter, y = number_admissions, fill = SIMD), size = 1)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        )+
+  # scale_x_date(date_breaks = "3 months", date_labels = "%b - %y")+
+  # scale_colour_manual(values = c("#A5d8DD", "#4cb5f5","#1C4E80", "#488A99", "#1F3F49" ))+
+  labs(
+    title = "Number of Hospital Admissions by SIMD" 
+  )
+  
+
+```
+
+```{r}
+missing_simd <- left_join(missing, simd_postcodes, by = "Postcode") 
+
+
+joined_simd <- left_join(new_simd, missing_simd, by = "Location") %>% mutate (SIMD = if_else(is.na(SIMD.x), SIMD.y, SIMD.x))
+
+
+```
+
+```{r}
+simd %>% filter(HB == "S92000003") %>% group_by((Date, SIMD))
+  ggplot()+
+  geom_bar(aes(x = Date))
+```
+
+
+create a map with all HB
+
+
+```{r}
+leaflet(health_b_geogr) %>% 
+    addTiles() %>% 
+    addMarkers(
+      lng = ~ Longitude , 
+      lat = ~ Latitude, 
+      clusterOptions = markerClusterOptions(),
+          icon = icons(iconUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/0/0e/NHS_Scotland_logo.svg/251px-NHS_Scotland_logo.svg.png?20211005185941",iconWidth = 30, iconHeight = 30), label = ~ HBName)
+```
+
+
+```{r}  
+
+# geometires
+
+library(sf)
+
+health_boards <- st_read(dsn = "../data/map_files/",
+                        layer = "SG_NHS_HealthBoards_2019")
+head(health_boards)
+
+hb_geometry <- st_geometry(health_boards)
+
+plot(hb_geometry)
+
+```
+

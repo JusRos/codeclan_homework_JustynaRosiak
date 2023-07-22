@@ -1,0 +1,406 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+data exploration
+
+```{r}
+library(tidyverse)
+library(tsibbledata)
+library(tsibble)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(lubridate)
+library(leaflet)
+library(skimr)
+
+nyc_bikes_df <- nyc_bikes
+
+skim(nyc_bikes)
+
+colour_scheme <-  c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+
+```{r}
+nyc_bikes_df <- nyc_bikes_df %>% 
+  mutate(year = year(start_time),
+        month = month(start_time, label = TRUE, abbr = TRUE),
+        day = day(start_time, label = TRUE, abbr = TRUE),
+        weekday = wday(start_time, label = TRUE, abbr = FALSE))
+                                           
+                      
+                 
+# add a date column  
+ 
+nyc_bikes_df <- nyc_bikes_df %>% mutate(date = as_date(ymd_hms(start_time))) 
+
+
+# add age column and change to NA those who's age is over 126 (the highest age recorded so far in history)
+
+nyc_bikes_df <- nyc_bikes_df %>% mutate(age = 2018 - birth_year) %>% mutate(age = if_else(age > 126, NA, age))
+nyc_bikes_df <- nyc_bikes_df %>% mutate(hire_length = as.period(stop_time - start_time)) 
+nyc_bikes_df <- nyc_bikes_df %>% mutate(hour = hour(hire_length),
+                                       minute = minute(hire_length), 
+                                       second = second(hire_length)) %>% 
+  mutate(length_minutes = round(hour * 60 + minute + second/60))
+
+hire_length <- nyc_bikes_df %>%  
+  mutate(length_minutes = round(hour * 60 + minute + second/60)) %>% 
+  index_by(month) %>% 
+  summarise(avg_hirelength = mean(length_minutes))
+
+
+
+```
+
+```{r}
+head(nyc_bikes_df)
+
+skim(nyc_bikes_df)
+```
+* What is the pattern of bike hires over time (e.g. within a year, month, week, or day)?
+* Do bike hire patterns differ between bike rider demographics? (e.g. gender, type of trip, age)
+* Any other insights?
+
+```{r}
+nyc_bikes_df %>% group_by(bike_id)
+
+```
+What is the pattern of bike hires over time (e.g. within a year, month, week, or day)?
+Do bike hire patterns differ between bike rider demographics? (e.g. gender, type of trip, age)
+Any other insights?
+
+- could be a plot showing the usage of bikes by gender per day of the week, month
+- use type to see how many people tend to be regular users
+- length of journeys ( regular vs occasional users)
+- average age of users - again by gender and type of use
+- average length of use of a bike
+- bike usage day of the week across the year( with casual and regular users)
+- average customer - age, gender, type of hire across a year and day of the week.
+Count mean, median and mode related to age, gender, type of hire.
+
+
+ratio subscribers to customers
+average age of people hiring a bike depending on time of the year (boxplot)
+
+**typical/average user**
+```{r}
+
+nyc_bikes_df %>% 
+  ggplot(aes(x = month , fill = type))+
+  geom_bar(colour = "white")+
+  theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    title = "\nHire count by type across a year\n",
+    x = "\nMonth\n", 
+    y = "\nCount\n"
+    
+  )
+
+```
+
+
+```{r}
+gender_filter <- nyc_bikes_df %>% filter(gender == "Male" | gender == "Female")
+gender_filter %>% 
+  ggplot(aes(x = age, y = gender))+
+geom_boxplot(fill = "#56B4E9")+
+  scale_x_continuous(breaks = c(10, 15,20,25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75))+
+  theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    title = "\nAverage user by age and gender\n",
+    x = "\nAge\n", 
+    y = "\nGender\n"
+    
+  )
+
+nyc_bikes_df %>% filter(gender == "Female")
+```
+The age of 50% of the male bike users has fallen between 30 and 43 years old.while 50% of female users were between 28 and 41.
+```{r}
+nyc_bikes_df %>% 
+  ggplot(aes(x = age_range , fill = gender))+
+  geom_bar(colour = "white", position = "dodge")+
+  theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    title = "\nBike hire count by age and gender of a user\n",
+    x = "\nAge\n", 
+    y = "\nCount\n"
+    
+  )
+```
+It looks like males are the main bike users across all age groups. People at the age of 49 tended to avoid disclosing their gender.The youngest bike user was below 20 years old and the oldest near 70 years old.
+
+
+**Usge by day of the week**
+
+
+```{r}
+
+# use spread across the weekdays and by gender
+nyc_bikes_df %>% 
+  ggplot(aes(x = weekday, fill = gender))+
+  geom_bar(position = "dodge")+
+   theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    
+    title = "\nService use by weekday and gender\n",
+    x = "\nDay of the week\n", 
+    y = "\nCount\n"
+    
+  )
+  
+```
+the proportion of males travelling by bike seems to be greater than females - we can count proportions maybe
+
+```{r}
+nyc_bikes_df %>% 
+  ggplot(aes(x = weekday, fill = type), )+
+  geom_bar( position = "dodge")+
+   theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    
+    title = "\nService use by weekday and type\n",
+    x = "\nDay of the week\n", 
+    y = "\nCount\n"
+   
+  )
+```
+
+```{r}
+avg_male <- nyc_bikes_df %>% filter(gender == "Male") %>% summarise(avg_age_male = mean(age), median_male_age = median(age))
+avg_female <- nyc_bikes_df %>% filter(gender == "Female") %>% summarise(avg_age_female = mean(age))
+
+
+
+nyc_bikes_df %>% index_by(date) %>% summarise(count = n()) %>% 
+  ggplot(aes(x = date, y = count))+
+  geom_point()+
+  geom_smooth()
+```
+
+**usage by month**
+
+
+We can see the number bike hires soars during summer months (Jul and August). We can also notice that colder months of the year tend to attract less bike enthusiasts.
+
+
+```{r}
+nyc_bikes_df %>%
+  ggplot(aes(x = month, group = gender, fill = type)) +
+  geom_bar() +
+  facet_grid(gender ~ type) +
+  theme(axis.text = element_text(size = 12)) +
+  scale_fill_manual(values = colour_scheme) +
+  theme_minimal() +
+  labs(title = "\nService use by type and gender\n",
+       x = "\nMonth\n",
+       y = "\nCount\n") +
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+```
+
+**Usage by time of the year by type**
+hire length by month
+```{r}
+
+hire_length <- nyc_bikes_df %>% mutate(hour = hour(hire_length),
+                                       minute = minute(hire_length), 
+                                       second = second(hire_length)) %>% 
+  mutate(length_minutes = round(hour * 60 + minute + second/60)) %>% 
+  group_by(month) %>% 
+  summarise(avg_hirelength = mean(length_minutes))
+
+
+hire_length_count <- 
+hire_length %>%
+  ggplot()+
+  geom_point(aes(x= month, y = avg_hirelength))
+
+```
+hire length by day of the week - Saturdays and Sundays tended to have longer average hire time
+```{r}
+ hire_length <-nyc_bikes_df %>%  
+  group_by(weekday) %>% 
+  summarise(avg_hirelength = mean(length_minutes))
+
+hire_length %>%
+  ggplot()+
+  geom_point(aes(x= weekday, y = avg_hirelength))
+```
+hire length by gender
+
+```{r}
+hire_length2 <- nyc_bikes_df %>% 
+  group_by(age) %>% 
+  summarise(avg_hirelength = mean(length_minutes))
+
+hire_length2 %>%
+  ggplot()+
+  geom_line(aes(x = age, y = avg_hirelength), size = 2)
+```
+```{r}
+hire_length3 <- nyc_bikes_df %>% 
+  group_by(start_time) %>% 
+  summarise(avg_hirelength = mean(length_minutes))
+
+hire_length3 %>%
+  ggplot()+
+  geom_line(aes(x = start_time, y = avg_hirelength))
+```
+
+```{r}
+age_in_2018 <- nyc_bikes_df %>% mutate(age_in_2018 = 2018 - birth_year)
+  
+```
+#
+```
+top 10 stations by number of hires
+
+()
+```{r}
+nyc_bikes_df %>% index_by(start_station) %>% summarise(trips_count = n()) %>% arrange(desc(trips_count)) %>% head(trips_count = 5) #%>% 
+  # ggplot(aes(x = start_station, y = trips_count))+
+  # geom_col()
+  # 
+```
+
+**hire by time of the day**
+
+```{r}
+nyc_bikes_df %>% 
+  mutate(time = hms(start_time))
+
+
+
+                             # breaks = c(as_hms("00:00:00"), as_hms("06:00:00"),
+                             #            as_hms("12:00:00"), as_hms("18:00:00"),
+                             #            as_hms("24:00:00")),
+                             # labels = c("Night", "Morning", "Afternoon", "Evening"),
+                             # include.lowest = TRUE))
+```
+```{r}
+start_stations <- nyc_bikes_df %>% as_tibble(select(start_station, start_lat, start_long)) %>% group_by(start_station) %>% summarise(start_long = first(start_long),                                                                                                 start_lat = first(start_lat))
+
+
+end_stations <- nyc_bikes_df %>% as_tibble(select(end_station, start_lat, start_long)) %>% group_by(end_station) %>% summarise(end_long = first(end_long),                                                                                                 end_lat = first(end_lat))
+
+leaflet(start_stations) %>% 
+    addTiles() %>% 
+    addMarkers(
+      lng = ~ start_long, 
+      lat = ~ start_lat, 
+      clusterOptions = markerClusterOptions(),
+          icon = icons(iconUrl = "https://play-lh.googleusercontent.com/nU9hlehhCfKL3UVhtOVnKJIRU3967x2ivi5m4Ny5VDY2vcDTwK2_b_KLGpnx1C-alWU",iconWidth = 30, iconHeight = 30), label = ~start_station) +
+  leaflet(end_stations) %>% 
+  addTiles() %>% 
+    addMarkers(
+      lng = ~ end_long, 
+      lat = ~ end_lat, 
+      clusterOptions = markerClusterOptions(),
+          icon = icons(iconUrl = "https://cdn-icons-png.flaticon.com/128/3198/3198336.png",iconWidth = 30, iconHeight = 30), label = ~end_station) +
+```
+
+find out which station had the most hires
+
+```{r}
+nyc_bikes_tibble <- as_tibble(nyc_bikes_df)
+
+
+nyc_bikes_tibble %>% group_by(start_station) %>% summarise(count = n()) %>% arrange(desc(count)) %>% head(n = 10) %>% 
+  ggplot(aes(x = reorder(start_station, -count), y = count))+
+  geom_col(fill = "#0072B2")+
+  theme(axis.text = element_text(size = 12))+
+  theme_minimal()+
+   labs(title = "\nTop 10 most popular start stations\n",
+       x = "\nStation ID\n",
+       y = "\nCount\n") +
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+
+end_stations <-nyc_bikes_df %>% distinct(end_station)
+
+start_stations <- nyc_bikes_df %>% distinct(start_station)
+```
+
+```{r}
+
+```{r}
+nyc_bikes_df %>% index_by(month) %>% summarise(count = n()) %>% 
+  ggplot(aes(x = month, y = count))+
+  geom_point(size = 3)+
+  theme(axis.text = element_text(size = 12)) +
+  scale_fill_manual(values = colour_scheme) +
+  theme_minimal() +
+  labs(title = "\nBike Hires by Month\n",
+       x = "\nMonth\n",
+       y = "\nCount\n") +
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```
+
+```{r}
+
+# use spread across the weekdays and by gender
+nyc_bikes_df %>% 
+  ggplot(aes(x = weekday, fill = gender))+
+  geom_bar()+
+   theme(axis.text = element_text(size = 12))+
+  scale_fill_manual(values = colour_scheme)+
+  theme_minimal()+
+  labs(
+    
+    title = "\nService use by weekday and gender\n",
+    x = "\nDay of the week\n", 
+    y = "\nCount\n"
+    
+  )
+```
+
+
+```{r}
+nyc_bikes_tibble <- as_tibble(nyc_bikes_df)
+
+
+nyc_bikes_tibble %>% group_by(start_station) %>% summarise(count = n()) %>% arrange(desc(count)) %>% head(n = 10) %>% 
+  ggplot(aes(x = reorder(start_station, -count), y = count))+
+  geom_col(fill = "#0072B2")+
+  theme(axis.text = element_text(size = 12))+
+  theme_minimal()+
+   labs(title = "\nTop 10 least popular start stations\n",
+       x = "\nStation ID\n",
+       y = "\nCount\n") +
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+nyc_bikes_tibble %>% group_by(end_station) %>% summarise(count = n()) %>% arrange(count) %>% head(n = 10) %>% 
+  ggplot(aes(x = reorder(end_station, -count), y = count))+
+  geom_col(fill = "#0072B2")+
+  theme(axis.text = element_text(size = 12))+
+  theme_minimal()+
+   labs(title = "\nTop 10 least popular end stations\n",
+       x = "\nStation ID\n",
+       y = "\nCount\n") +
+  guides(fill = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```

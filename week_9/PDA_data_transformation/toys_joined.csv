@@ -1,0 +1,102 @@
+id,quality,product_name,product_title,price_euro,weight,description,transaction_id,customer_id,date,customer_country,customer_age,customer_height_cm,customer_weight_kg,customer_gender
+1010,E,Barbie,SummerFun,5,146.9,Very Bad,35,76,15/6/2016,France,37,166,63,Male
+1010,E,Barbie,SummerFun,5,146.9,Very Bad,63,98,27/11/2016,UK,45,189,98,Male
+1010,E,Barbie,SummerFun,5,146.9,Very Bad,68,93,8/10/2017,Germany,42,180,75,Female
+896,C,Yo-yo,Junior,3.55,114.2,OK,NA,NA,NA,NA,NA,NA,NA,NA
+1011,C,MrPotatoHead,JumboPack,6.45,283.42,OK,29,49,12/10/2019,Germany,37,189,65,Male
+1011,C,MrPotatoHead,JumboPack,6.45,283.42,OK,91,42,8/3/2017,France,48,167,97,Male
+1006,E,MyLittlePony,Figurescollection,7.55,95.75,Very Bad,17,63,13/6/2016,USA,42,175.5,65,Female
+1006,E,MyLittlePony,Figurescollection,7.55,95.75,Very Bad,44,36,3/3/2016,Australia,36,189,79,Male
+1006,E,MyLittlePony,Figurescollection,7.55,95.75,Very Bad,81,30,19/4/2019,Australia,36,180,66,Male
+910,D,Yo-yo,Junior,2.5,114.2,Bad,NA,NA,NA,NA,NA,NA,NA,NA
+990,C,CabbagePatchKids,BallerinaDoll,150,123.75,OK,48,87,1/10/2016,USA,27,175.5,91,Female
+990,C,CabbagePatchKids,BallerinaDoll,150,123.75,OK,57,39,24/1/2018,UK,28,174,60,Female
+990,C,CabbagePatchKids,BallerinaDoll,150,123.75,OK,95,20,10/1/2018,USA,50,166,96,Male
+1017,C,RobotDog,BatteriesIncluded,45,269.56,OK,NA,NA,NA,NA,NA,NA,NA,NA
+994,B,RobotDog,BatteriesIncluded,50,269.56,Good,2,85,8/9/2020,France,20,166,90,Female
+994,B,RobotDog,BatteriesIncluded,50,269.56,Good,37,42,21/2/2017,France,48,167,97,Male
+994,B,RobotDog,BatteriesIncluded,50,269.56,Good,72,33,18/7/2016,New Zealand,35,175,81,Male
+994,B,RobotDog,BatteriesIncluded,50,269.56,Good,87,96,24/6/2019,UK,35.5,170,92,Male
+998,C,LegoSet,StarWars,20.55,341.23,OK,13,92,12/8/2016,Germany,42,180,60,Female
+998,C,LegoSet,StarWars,20.55,341.23,OK,66,41,11/7/2018,Spain,35,168,86,Female
+998,C,LegoSet,StarWars,20.55,341.23,OK,79,94,6/2/2016,Spain,32,174,98,Male
+854,A,Yo-yo,Junior,5.95,114.2,Very Good,NA,NA,NA,NA,NA,NA,NA,NA
+876,B,SlinkyDog,PullToy,31.95,254.75,Good,NA,NA,NA,NA,NA,NA,NA,NA
+915,E,Yo-yo,Junior,1,114.2,Very Bad,NA,NA,NA,NA,NA,NA,NA,NA
+885,D,SlinkyDog,PullToy,25.45,254.75,Bad,NA,NA,NA,NA,NA,NA,NA,NA
+895,E,SlinkyDog,PullToy,20.99,254.75,Very Bad,NA,NA,NA,NA,NA,NA,NA,NA
+1016,B,Barbie,SummerFun,8.95,146.9,Good,89,42,3/6/2018,France,48,167,97,Male
+1018,A,Rubik'sCube,TheOriginal3x3Cube,10.55,169.69,Very Good,4,18,10/3/2018,France,35,177,67,Female
+1002,D,CabbagePatchKids,BallerinaDoll,100,123.75,Bad,61,73,17/1/2016,USA,24,165,70,Male
+1002,D,CabbagePatchKids,BallerinaDoll,100,123.75,Bad,67,92,12/3/2018,Germany,42,180,60,Female
+1002,D,CabbagePatchKids,BallerinaDoll,100,123.75,Bad,74,12,10/12/2018,New Zealand,47,181,83,Male
+1002,D,CabbagePatchKids,BallerinaDoll,100,123.75,Bad,76,21,9/5/2020,Spain,21,176,99,Male
+983,C,NerfGun,ZombieStrike,20,270.36,OK,49,67,16/5/2020,Australia,19,170,60,Female
+1003,D,ActionMan,ActionPilot,8,357.7,Bad,22,17,5/7/2018,Australia,19,189,83,Female
+1003,D,ActionMan,ActionPilot,8,357.7,Bad,55,9,10/6/2019,USA,34,168,73,Male
+1003,D,ActionMan,ActionPilot,8,357.7,Bad,78,76,23/3/2019,France,37,166,63,Male
+985,E,NerfGun,ZombieStrike,15,270.36,Very Bad,59,31,7/12/2019,UK,26,180,95,Male
+1000,E,MrPotatoHead,JumboPack,3,283.42,Very Bad,12,45,17/1/2020,Spain,26,172,93,Male
+1000,E,MrPotatoHead,JumboPack,3,283.42,Very Bad,38,61,6/8/2019,Australia,19,169,79,Female
+1000,E,MrPotatoHead,JumboPack,3,283.42,Very Bad,41,64,15/5/2016,Spain,26,168,89,Female
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,5,42,17/4/2018,France,48,167,97,Male
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,10,48,23/6/2020,France,37.5,168,75,Male
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,40,38,26/11/2016,USA,34,166,73,Male
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,54,67,13/4/2020,Australia,19,170,60,Female
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,65,44,21/2/2016,Spain,35,168,86,Female
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,82,89,27/6/2018,France,29,180,67,Male
+1004,A,BopIt,TheClassicGame,12.5,211.69,Very Good,100,41,20/4/2016,Spain,35,168,86,Female
+1015,D,RobotDog,BatteriesIncluded,35,269.56,Bad,53,23,12/8/2019,New Zealand,36,168,97,Male
+1015,D,RobotDog,BatteriesIncluded,35,269.56,Bad,58,94,28/3/2020,Spain,32,174,98,Male
+832,A,SlinkyDog,PullToy,33.55,254.75,Very Good,NA,NA,NA,NA,NA,NA,NA,NA
+1012,D,MyLittlePony,Figurescollection,10,95.75,Bad,18,71,19/3/2018,New Zealand,42,176,85,Male
+1012,D,MyLittlePony,Figurescollection,10,95.75,Bad,30,67,21/7/2017,Australia,19,170,60,Female
+1008,B,MrPotatoHead,JumboPack,7.5,283.42,Good,80,35,12/8/2016,USA,42,180,60,Female
+1014,B,NerfGun,ZombieStrike,22.45,270.36,Good,6,31,18/9/2020,UK,26,180,95,Male
+1014,B,NerfGun,ZombieStrike,22.45,270.36,Good,47,35,24/11/2016,USA,42,180,60,Female
+1013,C,BopIt,TheClassicGame,9.5,211.69,OK,1,89,16/10/2016,France,29,180,67,Male
+1001,D,NerfGun,ZombieStrike,18.95,270.36,Bad,16,53,13/5/2016,France,19,183,67,Female
+1001,D,NerfGun,ZombieStrike,18.95,270.36,Bad,31,82,28/2/2016,France,20,177,65,Female
+1001,D,NerfGun,ZombieStrike,18.95,270.36,Bad,51,48,4/7/2019,France,37.5,168,75,Male
+1001,D,NerfGun,ZombieStrike,18.95,270.36,Bad,86,82,4/11/2019,France,20,177,65,Female
+1001,D,NerfGun,ZombieStrike,18.95,270.36,Bad,88,81,28/1/2019,UK,27,187,91,Female
+988,C,MyLittlePony,Figurescollection,12.95,95.75,OK,62,36,20/5/2019,Australia,36,189,79,Male
+993,B,BopIt,TheClassicGame,11.5,211.69,Good,7,6,8/9/2016,France,20,177,66,Female
+993,B,BopIt,TheClassicGame,11.5,211.69,Good,42,80,19/9/2016,Germany,37,178,89,Male
+993,B,BopIt,TheClassicGame,11.5,211.69,Good,46,91,1/8/2017,New Zealand,37,179,79,Female
+993,B,BopIt,TheClassicGame,11.5,211.69,Good,60,94,18/4/2017,Spain,32,174,98,Male
+993,B,BopIt,TheClassicGame,11.5,211.69,Good,84,47,27/7/2017,France,38,167,95,Male
+987,A,NerfGun,ZombieStrike,25.95,270.36,Very Good,50,95,11/1/2020,USA,43,171,69,Female
+997,E,BopIt,TheClassicGame,5.55,211.69,Very Bad,23,97,4/4/2019,Spain,37,165,93,Male
+997,E,BopIt,TheClassicGame,5.55,211.69,Very Bad,28,24,17/3/2017,Australia,33,180,80,Male
+997,E,BopIt,TheClassicGame,5.55,211.69,Very Bad,73,83,6/6/2020,Australia,50,170,79,Male
+1022,A,CabbagePatchKids,BallerinaDoll,250,123.75,Very Good,27,13,28/11/2020,Germany,37,181,82,Male
+1022,A,CabbagePatchKids,BallerinaDoll,250,123.75,Very Good,32,2,2/9/2020,USA,42,184,73,Female
+989,A,MrPotatoHead,JumboPack,8,283.42,Very Good,21,93,16/5/2020,Germany,42,180,75,Female
+989,A,MrPotatoHead,JumboPack,8,283.42,Very Good,45,91,14/7/2018,New Zealand,37,179,79,Female
+989,A,MrPotatoHead,JumboPack,8,283.42,Very Good,52,66,24/6/2019,USA,49,175.5,71,Female
+989,A,MrPotatoHead,JumboPack,8,283.42,Very Good,77,81,11/7/2020,UK,27,187,91,Female
+996,C,ActionMan,ActionPilot,9.65,357.7,OK,34,63,12/4/2020,USA,42,175.5,65,Female
+996,C,ActionMan,ActionPilot,9.65,357.7,OK,36,13,19/2/2016,Germany,37,181,82,Male
+996,C,ActionMan,ActionPilot,9.65,357.7,OK,56,61,10/12/2016,Australia,19,169,79,Female
+996,C,ActionMan,ActionPilot,9.65,357.7,OK,93,26,4/11/2020,UK,24,174,60,Female
+999,E,Rubik'sCube,TheOriginal3x3Cube,3,169.69,Very Bad,24,2,18/12/2020,USA,42,184,73,Female
+999,E,Rubik'sCube,TheOriginal3x3Cube,3,169.69,Very Bad,90,40,14/8/2017,Spain,25,188,93,Male
+977,B,ActionMan,ActionPilot,10,357.7,Good,26,2,16/11/2016,USA,42,184,73,Female
+890,B,Yo-yo,Junior,4,114.2,Good,NA,NA,NA,NA,NA,NA,NA,NA
+980,D,Barbie,SummerFun,6.55,146.9,Bad,39,70,16/8/2017,USA,18,171,86,Female
+1021,A,Barbie,SummerFun,10.95,146.9,Very Good,25,49,1/9/2018,Germany,37,189,65,Male
+1005,E,CabbagePatchKids,BallerinaDoll,50,123.75,Very Bad,43,99,27/7/2019,Spain,49,168,61,Female
+1005,E,CabbagePatchKids,BallerinaDoll,50,123.75,Very Bad,64,22,9/4/2018,France,20,178,88,Female
+1005,E,CabbagePatchKids,BallerinaDoll,50,123.75,Very Bad,75,98,26/4/2019,UK,45,189,98,Male
+995,C,Barbie,SummerFun,7.5,146.9,OK,8,71,19/4/2019,New Zealand,42,176,85,Male
+995,C,Barbie,SummerFun,7.5,146.9,OK,9,61,10/4/2017,Australia,19,169,79,Female
+995,C,Barbie,SummerFun,7.5,146.9,OK,83,50,24/10/2020,New Zealand,37,165,81,Female
+995,C,Barbie,SummerFun,7.5,146.9,OK,94,13,23/3/2019,Germany,37,181,82,Male
+1007,D,MrPotatoHead,JumboPack,4,283.42,Bad,11,17,11/5/2019,Australia,19,189,83,Female
+881,C,SlinkyDog,PullToy,29.75,254.75,OK,NA,NA,NA,NA,NA,NA,NA,NA
+1009,A,LegoSet,StarWars,25.95,341.23,Very Good,33,37,18/6/2017,New Zealand,33,169,81,Male
+1009,A,LegoSet,StarWars,25.95,341.23,Very Good,85,67,23/11/2016,Australia,19,170,60,Female
+1009,A,LegoSet,StarWars,25.95,341.23,Very Good,99,94,16/10/2020,Spain,32,174,98,Male
+NA,NA,NA,NA,NA,NA,NA,NA,84,NA,New Zealand,37,176,62,Female
+NA,NA,NA,NA,NA,NA,NA,NA,43,NA,UK,42,172,64,Female

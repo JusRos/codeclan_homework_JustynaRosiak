@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(tsibbledata)
+library(tsibble)
+library(dplyr)
+library(skimr)
+
+nyc_bikes_df <- nyc_bikes
+```
+
+```{r}
+# dividing start time into 4 columns year, month, day and weekday 
+nyc_bikes_df <- as_tibble(nyc_bikes_df %>% mutate(year = year(start_time),
+                        month = month(start_time, label = TRUE, abbr = TRUE),
+                                                day = day(start_time),
+                        weekday = wday(start_time, label = TRUE, abbr = FALSE)
+                                           
+                        ))
+                       
+
+# # dividing end time into 4 columns year, month, day and weekday
+# nyc_bikes_df <- nyc_bikes_df %>% mutate(year_stop = year(stop_time),
+#                         month_stop = month(stop_time, label = TRUE, abbr = TRUE),
+#                         day_stop = day(stop_time),
+#                         weekday_stop = wday(stop_time, label = TRUE, abbr = FALSE),
+ 
+
+# add a date column  
+ 
+nyc_bikes_df <- nyc_bikes_df %>% mutate(date = as_date(ymd_hms(start_time))) 
+
+# gender unknowns changed to NAs
+
+# nyc_bikes_df <- nyc_bikes_df %>% mutate(gender = na_if(gender, "Unknown"))
+
+# add age column and change to NA those who's age is over 126 (the highest age recorded so far in history)
+
+nyc_bikes_df <- nyc_bikes_df %>% mutate(age = 2018 - birth_year) %>% mutate(age = if_else(age > 126, NA, age))
+
+nyc_bikes_df <- as_tibble(nyc_bikes_df %>% mutate(hour = hour(hire_length),
+                                       minute = minute(hire_length), 
+                                       second = second(hire_length)) %>% 
+  mutate(length_minutes = round(hour * 60 + minute + second/60)))
+
+write_csv(nyc_bikes_df, file = "..//bikes_project/nyc_bikes_df")
+
+```
+
+
+
