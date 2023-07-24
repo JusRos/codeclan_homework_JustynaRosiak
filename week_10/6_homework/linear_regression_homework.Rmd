@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library(tidyverse)
+# load thea data
+project <- read_csv("data/project_management.csv")
+project <- project %>% 
+  select(-...1)
+
+```
+
+```{r}
+# Plot the data, taking estimated_length as the independent variable and actual_length as the dependent variable.
+
+
+project %>% 
+  ggplot(aes(estimated_length, actual_length))+
+  geom_point()
+
+```
+
+```{r}
+
+# Calculate the correlation coefficient of estimated_length and actual_length and interpret the value you obtain.
+
+project %>% summarise(correlation = cor(estimated_length, y = actual_length))
+```
+The correlation between estimated_length and actual_length of the project shows a strong correlation.
+
+```{r}
+
+# Perform a simple linear regression using actual_length as the dependent variable, and estimated_length as the independent variable. Save the model object to a variable.
+
+model <- lm(formula = actual_length ~ estimated_length, data = project)
+
+```
+```{r}
+library(modelr)
+
+sample <- project %>% 
+  add_predictions(model) %>% 
+  add_residuals(model)
+```
+```{r}
+sample %>% 
+  ggplot(aes(x = estimated_length))+
+  geom_point( aes(y = actual_length))+
+  geom_line(aes(y = pred), col = "red")
+```
+Interpret the regression coefficient of estimated_length (i.e. slope, gradient) you obtain from the model. How do you interpret the r2 value reported by the model?
+Positive correlation between estimated and actual length of a project. 
+ 
+```{r}
+library(broom)
+
+glance(model)
+```
+
+64.7% of a variation in estimated length in the sample data can be explained  by variation in actual_length of a project.
+
+```{r}
+tidy(model)
+```
+```{r}
+library(ggfortify)
+autoplot(model)
+```
+checking the independence of variables (residuals vs fitted) - looks like  they're independent. Normal Q-Q tests the normality of residuals  - it looks like the residuals are normally distributed.
+It looks like the relationship is statistically significant. 
