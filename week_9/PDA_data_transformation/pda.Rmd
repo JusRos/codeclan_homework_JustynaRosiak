@@ -8,6 +8,26 @@ output:
 code_folding: hide
 ---
 
+Evidence for the following :
+
+1.8 Data management including security
+
+3.1 Tools for data transformation including tools for automating data transformation
+
+3.2 Types of data transformation
+
+3.3 Transformations including joins
+
+3.4 String manipulation including extracting a substring, replacing part of a string, joining strings and splitting strings
+
+3.5 Data cleaning
+
+3.6 Data modelling including star schema
+
+3.7 Data loading
+
+3.8 Legal and ethical considerations for data storage
+
 
 ## 1
 
@@ -22,8 +42,11 @@ knitr::opts_chunk$set(
 )
 
 transactions <- read_csv("raw_data/toy_transactions.csv")
+
 transactions <- transactions %>% 
-  unite(date, day, month, year, sep = "/")
+  unite(date, day, month, year, sep = "/") %>% mutate(date = dmy(date))
+
+transactions
 ```
 ## 2
 
@@ -34,11 +57,7 @@ Split the extra information from the product into a new column, so you have two 
 
 ```{r setup = FALSE}
 
-knitr::opts_chunk$set(
-  message = FALSE,     # Hide messages
-  warning = FALSE)     # Hide warnings
-
-  # read in toys csv
+# read in toys csv
 toys <- read_csv("raw_data/toys.csv")
 
 # convert weight column into a numeric one
@@ -52,7 +71,7 @@ toys <- toys %>%
   mutate(product_name = str_remove_all(product_name, "\\s*"),
          product_title = str_remove_all(product_title, "\\s*"))
 
-
+toys
 ```
 ## 3
 
@@ -62,10 +81,6 @@ Remove the unnecessary information for each descriptor
 Replace the categories so ‘Awesome’ and ‘Very Awesome’ become ‘Good’ and ‘Very Good’. Do the same thing for ‘Awful’ replacing it with ‘Bad’.
 
 ```{r}
-knitr::opts_chunk$set(
-  message = FALSE,     # Hide messages
-  warning = FALSE)     # Hide warnings
-
 
 quality <- read_csv("raw_data/quality.csv")
 quality <- quality %>% 
@@ -77,6 +92,7 @@ quality <- quality %>%
    description == "Very Awful" ~ "Very Bad",
    TRUE ~ description
   ))
+quality
 ```
 
 ## 4
@@ -97,7 +113,7 @@ dir_ls(data_dir) # check what files are in the raw_data folder
  customers <- csv_files %>% 
   map_dfr(read_csv)
 
-
+customers
 ```
 ## 5
 
@@ -113,6 +129,7 @@ customers <- customers %>%
     ~ coalesce(., median(., na.rm = TRUE))
   )
          )
+customers
 ```
 
 ## 6
@@ -128,6 +145,7 @@ toy_quality <- full_join(toys, quality, by = c("quality" = "id"))
 toy_transactions <- full_join(toy_quality, transactions, by = c("id" = "toy_id"))
 toys_joined <- full_join(toy_transactions, customers, by = c("customer_id" = "id"))
 
+toys_joined
 ```
 ## 8
 Are there any ethical and legal considerations with storing this data in its current state?
@@ -138,7 +156,9 @@ The data stored in the current form contains customer sensitive and personally i
 Remove any personally identifiable or sensitive information on customers.
 
 ```{r}
-toys_joined <- toys_joined %>% select(-c(first_name, last_name))
+toys_joined <- toys_joined %>% select(-c(first_name, last_name, customer_gender, customer_height_cm, customer_weight_kg))
+
+toys_joined
 
 ```
 ## 10
