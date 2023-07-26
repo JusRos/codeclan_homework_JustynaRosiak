@@ -1,0 +1,95 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+1. Load the housing_prices.csv data set and undertake an initial exploration of the data. You will find details on the data set on the relevant Kaggle page.
+
+```{r}
+library(tidyverse)
+library(GGally)
+library(skimr)
+library(fastDummies) # to make dummy variables
+library(modelr)
+library(ggfortify)
+library(fastDummies)
+library(janitor)
+housing_prices <- read_csv("data/housing_prices.csv")
+
+housing_prices %>% select(total_rooms, total_bedrooms)
+skim(housing_prices) 
+
+# there were 200 misssing values in total bedrooms  and I decided to leave them for now
+
+
+summary(housing_prices)
+
+housing_dummy <- housing_prices %>%  dummy_cols(select_columns = "ocean_proximity", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>% select(-ocean_proximity_ISLAND)
+housing_dummy <- clean_names(housing_dummy)
+
+
+```
+
+2. We expect the total_rooms of houses to be strongly correlated with total_bedrooms. Use ggpairs() to investigate correlations between these two variables.
+
+```{r}
+housing_dummy %>% ggpairs(columns = c("total_rooms","total_bedrooms"))
+
+
+```
+3. So, we do find significant correlations. Let’s drop total_bedrooms from the dataset, and use only total_rooms going forward.
+```{r}
+housing_dummy <- housing_dummy %>% select(-total_bedrooms)
+housing_dummy
+```
+4. We are interested in developing a regression model for the median_house_value of a house in terms of the possible predictor variables in the dataset.
+
+4a. Use ggpairs() to investigate correlations between median_house_value and the predictors (this may take a while to run, don’t worry, make coffee or something).
+
+```{r}
+housing_dummy %>% ggpairs(columns = c("median_house_value", "housing_median_age", "total_rooms", "population", "households", "median_income", "ocean_proximity_1h_ocean", "ocean_proximity_inland", "ocean_proximity_near_bay", "ocean_proximity_near_ocean"))
+# mod1 <- lm(median_house_value ~ total_rooms + population + households + median_income + housing_median_age, housing_prices)
+# autoplot(mod1)
+```
+Strong correlation between median_house_value and median income. There is also a moderate correlation between median_house_value and ocean_proximity_inland.
+There is also a very strong correlation between household and population, total rooms and households, and also between population and total rooms, but we are not interested in these ones for now.
+
+4b. Perform further ggplot visualisations of any significant correlations you find.
+
+```{r}
+housing_dummy %>% 
+  ggplot(aes(median_house_value, median_income))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+# housing_dummy %>% 
+#   ggplot(aes(median_house_value, ocean_proximity_inland))+
+#   geom_col()
+```
+Shortly we may try a regression model to fit the categorical predictor ocean_proximity. Investigate the level of ocean_proximity predictors. How many dummy variables do you expect to get from it?
+```{r}
+housing_prices %>% group_by(ocean_proximity) %>% 
+  summarise(proximity_type_count = count(ocean_proximity))
+```
+ Ocean_proximity has 5 levels which indicates that there could be 4 dummy variables ( the fifth one would be dropped)
+
+6. Start with simple linear regression. Regress median_house_value on median_income and check the regression diagnostics.
+
+```{r}
+
+model <- lm(formula = median_house_value ~  median_income, data =  housing_dummy)
+model
+autoplot(model)
+```
+
+For each 10,000 USD the median house value goes by 39987 USD.
+
+```{r}
+mod2 <- lm(median_house_value ~ median_income + total_rooms, housing_prices)
+mod2
+plotModel(mod2)
+
+autoplot(mod2)
+```
+

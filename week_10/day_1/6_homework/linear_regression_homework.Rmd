@@ -53,6 +53,11 @@ sample %>%
 ```
 Interpret the regression coefficient of estimated_length (i.e. slope, gradient) you obtain from the model. How do you interpret the r2 value reported by the model?
 Positive correlation between estimated and actual length of a project. 
+
+ a 1 day increase in estimated_length is associated with a 1.2235
+ day increase in actual_length, i.e. the company is underestimating job lengths.
+
+The r2 value tells us that approximately 65% of the variation in actual_length can be predicted from the variation in estimated_length.
  
 ```{r}
 library(broom)
@@ -71,3 +76,18 @@ autoplot(model)
 ```
 checking the independence of variables (residuals vs fitted) - looks like  they're independent. Normal Q-Q tests the normality of residuals  - it looks like the residuals are normally distributed.
 It looks like the relationship is statistically significant. 
+
+
+Assumptons of linear regression:
+1. The relationship is linear(residuals vs fitted)
+2. (Error) residuals should be normally distributed (Q-Q plot)
+3. Homoscedastic errors:
+  - constant variance
+
+```{r}
+ par(mfrow =  c(2,3))
+plot(model)
+
+hist(model$residuals)
+```
+
