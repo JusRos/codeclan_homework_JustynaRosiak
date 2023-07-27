@@ -69,10 +69,10 @@ housing_dummy %>%
 ```
 Shortly we may try a regression model to fit the categorical predictor ocean_proximity. Investigate the level of ocean_proximity predictors. How many dummy variables do you expect to get from it?
 ```{r}
-housing_prices %>% group_by(ocean_proximity) %>% 
-  summarise(proximity_type_count = count(ocean_proximity))
+# housing_prices %>% group_by(ocean_proximity) %>% 
+#   summarise(proximity_type_count = count(ocean_proximity))
 ```
- Ocean_proximity has 5 levels which indicates that there could be 4 dummy variables ( the fifth one would be dropped)
+ Ocean_proximity has 5 levels which indicates that there could be 4 dummy variables (the fifth one would be dropped)
 
 6. Start with simple linear regression. Regress median_house_value on median_income and check the regression diagnostics.
 
@@ -81,6 +81,7 @@ housing_prices %>% group_by(ocean_proximity) %>%
 model <- lm(formula = median_house_value ~  median_income, data =  housing_dummy)
 model
 autoplot(model)
+
 ```
 
 For each 10,000 USD the median house value goes by 39987 USD.
@@ -88,7 +89,7 @@ For each 10,000 USD the median house value goes by 39987 USD.
 ```{r}
 mod2 <- lm(median_house_value ~ median_income + total_rooms, housing_prices)
 mod2
-plotModel(mod2)
+
 
 autoplot(mod2)
 ```
