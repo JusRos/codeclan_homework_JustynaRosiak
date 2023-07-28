@@ -71,25 +71,26 @@ lower energy production	upper energy production	rating
 2000	very low
 
 ```{r eval = FALSE}
-rating <- if_else(energy_scotland$energy_prod > 20000, "very high", if_else(energy_scotland$energy_prod > 10000 & energy_scotland$energy_prod <= 20000, "high", if_else(energy_scotland$energy_prod > 5000 & energy_scotland$energy_prod <= 10000, "medium", if_else(energy_scotland$energy_prod > 2000 & energy_scotland$energy_prod <= 5000, "low", "very low"))))
+rating <- if_else(energy_scotland$energy_prod > 20000, "very high", 
+                  if_else(energy_scotland$energy_prod > 10000 & energy_scotland$energy_prod <= 20000, "high", if_else(energy_scotland$energy_prod > 5000 & energy_scotland$energy_prod <= 10000, "medium", if_else(energy_scotland$energy_prod > 2000 & energy_scotland$energy_prod <= 5000, "low", "very low"))))
 
 energy_scotland_rating <- bind_cols(energy_scotland, rating = rating)
+
 ```
 
-I have simplified the code and added a new column in the first step using a mutate function. 
+I have simplified and shortened the code by using the mutate() function to create a rating column and then using case_when() function, where I have assigned the desired values to specific labels within that column. The new code uses a more simplified syntax and indentation to make it easier to read and understand. It also assigns everything to a new object called energy_scotland_rating in one step instead of two(as it doesn't require the binding-columns step anymore).
 
 ```{r}
-energy_scotland <- energy_scotland %>% 
-  mutate(rating = if_else(energy_prod > 20000, "very high", 
-                          if_else(energy_prod > 10000 & energy_prod <= 20000, "high",
-                                  if_else(energy_prod > 5000 & energy_prod <= 10000, "medium", 
-                                          if_else(energy_prod > 2000 & energy_prod <= 5000, "low", "very low")
-                                          )
-                                  )
-                          )
-         )
+energy_scotland_rating <- energy_scotland %>% 
+  mutate(rating = case_when(energy_prod > 20000 ~ "very high", 
+                            energy_prod > 10000 & energy_prod <= 20000 ~ "high",
+                            energy_prod > 5000 & energy_prod <= 10000 ~ "medium", 
+                            energy_prod > 2000 & energy_prod <= 5000 ~ "low",
+                            TRUE ~ "very low")
+          )
+                              
 
-energy_scotland
+energy_scotland_rating
 ```
 
 ## Task 3
@@ -117,28 +118,30 @@ ggplot() +
 
 ```
 
-I have reduced the number of objects needed to created the plot and then shortened the ggplot part of the code. I have also specified breaks.
+I have reduced the number of objects needed to create the plot by simplifying the syntax. I have also used a filter function but one line long instead of 6. I have also simplified the ggplot syntax by adding the aesthetics into the ggplot function. I specified the breaks in the scale_x_continuous by using a code inside it to reduce one extra object called "years". I felt that the code is short and simple enough to be included in the function scale_x_continuous and adding it doesn't compromise readability of the whole code chunk.
 
 ```{r}
 energy_scotland %>% 
   filter(sector %in% c("Renewables", "Gas", "Pumped hydro")) %>%
   ggplot(aes(x = year, y = energy_prod, colour = sector)) +
   geom_line()+
-  scale_x_continuous(breaks = c(2005:2017)) +
+  scale_x_continuous(breaks = unique(energy_scotland$year))+
   labs(title = "Energy production in Scotland over time split by sector", x = "Year", y = "Energy production")
+
 
 ```
 ## Task 4
 Goal: calculate the average energy production for the Coal, Gas, and Oil sectors across the time period in the data.
 
 ```{r eval = FALSE}
+
 energy_scotland %>%
   filter(sector == c("Coal", "Gas", "Oil")) %>%
   group_by(sector) %>%
   summarise(avg_energy_prod = mean(energy_prod))
 ```
 
-In the code above R compares only the first element of the sector with the entire vector, so I corrected it to make sure that data is filtered as desired and the mean is  calculated properly.
+In the code above the filter function doesn't return all the rows containing coal, gas and oil. "==" intends to compare one value to another, not to a list of values. It is necessary to use %in% in order to filter correctly for all the values in the vector of length 3 (c("Coal", "Gas", "Oil"). Filtering affects the next step in the code - grouping and calculating mean for each of the grouped values, so the values obtained in the original code were wrong and the new code fixes that issue.
 
 ```{r}
 energy_scotland %>%
@@ -170,8 +173,7 @@ student %>%
   mutate(valid_email = str_detect(email_address, "@a-z.")
 ```
 
-I have put *clean names* function first, to make sure the *select* function works as desired, then added *mutate* in order to make *str_to_lower* to work as intended and updated regex pattern to make sure it picks up the email address that is likely to be written in a correct format and returns true or false in the valid email column.
-
+I have put *clean names* function first, to make sure the *select* function works as desired, then added *mutate* in order to make *str_to_lower* to work as intended and updated regex pattern to make sure it picks up the email address that is likely to be written in a correct format and returns true or false in the valid email column. Adding regex helps to detect an email address format in the given column even if the email address changes in the future,(it helps to validate the data). The previous pattern wasn't working as intended so I created a new one that that detects an email address in a string as it should ( it specifies that lower case letters and a "." can be present in a string before and after "@".)
 ```{r}
 student %>%
   janitor::clean_names() %>%
@@ -192,7 +194,7 @@ subsetting_salaries <- function(dataframe_input,job_area_input,salary_input){
 subsetting_salaries(CodeClanData::all_salaries, Human Resources, 30000)
 ```
 
-I have removed *select* as I needed other columns in the output, then I have filtered data by salary being greater than salary input and added return (data1) to see the final output of the function. while testing the function I have removed *CodeClanData::* as all salaries wasn't there and has already been assigned to an object called all _salaries (directly from a csv file). I have also added quotation marks to a character vector in order for the function to work.
+I have removed *select* as I needed other columns in the output, then I have filtered data by salary being greater than salary input and added return (data1) to see the final output of the function. while testing the function I have removed *CodeClanData::* as all salaries wasn't there and it has already been assigned to an object called all _salaries (directly from a csv file). I have also added quotation marks to a character vector in order for the function to work.
 
 ```{r}
 

@@ -38,7 +38,6 @@ alias(price ~ ., kc_house_tidy)
 kc_house_tidy <- kc_house_tidy %>% 
   select(-sqft_basement)
 
-
 alias(price ~ ., kc_house_tidy)
 ```
 Question 3
@@ -54,17 +53,38 @@ houses_tidy_nonnumeric <- kc_house_tidy %>%
 
 houses_tidy_nonnumeric$price <- kc_house_tidy$price
 
-ggpairs(houses_tidy_numeric)
-ggpairs(houses_tidy_nonnumeric)
+ggpairs(houses_tidy_numeric, progress = FALSE)
+# saves teh plot for future reference, can also provide dimensions to make it bigger
+ggsave("ggpairs_numeric.png", width = 15, height = 15)
+ggpairs(houses_tidy_nonnumeric, progress = FALSE)
+
+ggsave("ggpairs_nonnumeric.png", width = 15, height = 15)
 ```
 
- Based on the above I will build models with the follwoing variables: sqft_living, bathrooms, view and grade.
+ Based on the above I will build models with the following variables: sqft_living, bathrooms, view and grade.
  
 ```{r}
 mod1 <- lm(price ~ sqft_living, kc_house_tidy)
 summary(mod1)
 autoplot(mod1)
+
+# example fo checking with anova
+
+mod2 <- lm(price~sqft_living + grade, kc_house_tidy)
+anova(mod1, mod2)
+
+# example with grouping
+
+houses_tidy <- kc_house_tidy %>% 
+  mutate(grade_grouped = as.factor(if_else(as.numeric(grade) < 8, 7,as.numeric(grade) )))
+         
+         
 ```
+
+```{r}
+plot(mod2)
+```
+
 ```{r}
 mod2 <- lm(price ~ bathrooms, kc_house_tidy)
 summary(mod2)
@@ -115,7 +135,10 @@ houses_remaining_resid <- kc_house_tidy %>%
   add_residuals(mod6a) %>% 
   select(-c("sqft_living", "price", "grade"))
 houses_remaining_resid %>% 
-  ggpairs()
+  ggpairs(transform = FALSE)
+
+
+houses_model <- kc_house_tidy
 ```
  
 So we have a model with the first predictor being sqft_living and second view 
