@@ -56,7 +56,7 @@ age_and_sex %>% distinct(AdmissionType)
 age_and_sex %>% distinct(HB)
 ```
 
-Start Q4 2017, finish Q4 2022, the data for 2022 Q4 is provisional (do we want to use it? how do we want to mention it on the dasboard in analysis)
+Start Q4 2017, finish Q4 2022, the data for 2022 Q4 is provisional (do we want to use it? how do we want to mention it on the dashboard in analysis)
 
 18 different Health Boards
 7 different admission types;
@@ -79,7 +79,7 @@ age_and_sex %>% filter(AdmissionType == "Not Specified") %>% group_by(HB) %>% su
 ```
 ```{r}
 age_and_sex %>% filter(Quarter == "2021Q3") %>%  group_by(AdmissionType, Sex, Age)
-```
+```data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAWElEQVR42mNgGPTAxsZmJsVqQApgmGw1yApwKcQiT7phRBuCzzCSDSHGMKINIeDNmWQlA2IigKJwIssQkHdINgxfmBBtGDEBS3KCxBc7pMQgMYE5c/AXPwAwSX4lV3pTWwAAAABJRU5ErkJggg==
 
 ```{r}
 

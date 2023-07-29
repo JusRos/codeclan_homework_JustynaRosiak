@@ -1,0 +1,193 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(GGally)
+library(caret)
+library(skimr)
+# read in data
+
+red <- read_csv("data/wine_quality_red.csv")
+white <- read_csv("data/wine_quality_white.csv")
+
+# explore data
+skim(red)
+head(red)
+
+skim(white)
+head(white)
+
+# add column with wine type to both data sets before binding and removing a wine id
+
+red <- red %>% 
+  mutate(wine_type = "red")
+
+white <- white %>% 
+    mutate(wine_type = "white")
+
+# bind both sets together to create wines
+wines <- bind_rows(red, white)
+
+```
+I am planning to use a K-fold method to test and validate my model. I will be looking at r-squared and Residual Standard error as the measures of good fit of the model. The purpose of analysis is to investigate the data set and to model the *quality* of the wines.
+
+## Exploratory analysis
+
+```{r}
+wines %>% arrange(desc(p_h))
+# ph is between between 2.82 and 4.01
+```
+
+```{r}
+skim(wines)
+head(wines)
+wines %>%  arrange(desc(alcohol))
+```
+
+```{r}
+
+# convert categorical vatriables into factor
+wines <- wines %>% mutate(wine_type = as_factor(wine_type),
+                 region = as_factor(region)) 
+       
+```
+
+## plotting all the varaibles 
+```{r message = FALSE}
+wines %>% 
+ ggpairs(progress = FALSE)
+```
+Lets first have a look at the distribution of the quality variable
+
+```{r}
+wines %>% 
+  ggplot(aes(x = quality))+
+  geom_bar()
+```
+
+The distribution suggests that the majority of wines have been scored between 4.5 and 7.5 withe very few being at both ends of the scale from 0-10. 
+
+
+Let's have a closer look at region and wine type to see whether it is worth keeping them in the model in relation to quality.
+
+```{r}
+wines %>% 
+  ggplot(aes(x = region, y = quality))+
+  geom_boxplot()
+```
+It looks like the quality of wines produced by different countries is comparable, so I will not use region in further analysis.
+
+```{r}
+wines %>% 
+  ggplot(aes(x= wine_type, y = quality))+
+  geom_boxplot()
+```
+
+The type of wine and quality seem to be comparable. The majority of ratings for both types of wine fall between 5 and 6.5. I will also not use this predictor in future analysis.
+
+```{r}
+wines <- wines %>% 
+  select(-c(wine_id, region, wine_type))
+```
+
+Let's find out if there are any aliases in the data 
+
+```{r}
+alias(quality ~ ., wines)
+
+# no aliases in the data set, so we can progress with teh current data set
+```
+
+lets find out correlations between variables
+
+```{r}
+wines %>% 
+  ggcorr(label = TRUE)
+
+ggsave("correlation_wines.png")
+```
+We can notice that there is a moderate positive correlation between quality and alcohol, and negative weak correlation between quality and volatile_acidity, and quality and density. There is also weak neagative correlation between quality and chlorides. There is a very weak positive correlation between quality and citric acid and very weak negative correlation between quality and fixed acidity. There seem to be no correlation between quality and sulphates, ph, total sulfur dioxide, free sulfur dioxide and residual sugar.
+
+```{r}
+mod1 <- lm(quality ~ alcohol, wines)
+summary(mod1)
+plot(mod1)
+```
+
+Around 18% of the variance in quality can be explained by alcohol. On average for every one unit increase in alcohol the quality should increase by 0.33 units. The coefficient is statistically significant.
+
+let's check if it is better to add density or volatile_acidity to the model
+
+```{r}
+mod2a <- lm(quality ~ alcohol + density, data = wines)
+
+summary(mod2a)
+
+```
+
+
+The r-squared value has not changed anything and the coefficient for density is not statistically significant, which suggests that density should not be added to the model at this stage.
+
+
+```{r}
+# adding volatile_acidity to the model as a second predictor
+mod2b <- lm(quality ~ alcohol + volatile_acidity, data = wines)
+
+summary(mod2b)
+plot(mod2b)
+```
+The variance in quality that can be explained by combined alcohol and volatile acidity has increased to around 23%. The coefficient for volatile_acidity  is -1.32 which suggests that for evry one unit increase in quality the acdity is expected to decrease by 1.32 units, while alcohol is at the same level. Both variables are statisticlly significant indicating strong relationship between qualoity and alcohol, and volatile_acidity.
+
+
+Let's check if adding density and chloride as third predictors will improve the model
+
+```{r}
+mod3a <- lm(quality ~ alcohol + volatile_acidity + chlorides, data = wines)
+summary(mod3a)
+```
+
+```{r}
+mod3b <- (lm(quality ~ alcohol + volatile_acidity + density, data = wines))
+summary(mod3b)
+plot(mod3b)
+```
+
+Density has improved the model only very slightly as now around 24 % of variance in the quality can be expalined by all theree variables - alcohol, volatile_acidity and density.
+
+let's test the mod2b and mod3b using K-fold method.
+
+```{r}
+# test mod3b 
+cv_10_fold <- trainControl(method = "cv", # cross-validation
+                           number = 10, # 10-fold
+                           savePredictions = TRUE) # save all predictions
+
+model_3b <- train(quality ~ alcohol + volatile_acidity + density, data = wines,
+               trControl = cv_10_fold, # use options defined above
+               method = 'lm')
+
+# calculate an average error
+mean(model_3b$resample$RMSE)
+
+# calculate an average r-square value
+mean(model_3b$resample$Rsquared)
+
+```
+
+```{r}
+model_2b <- train(quality ~ alcohol + volatile_acidity, data = wines,
+               trControl = cv_10_fold, # use options defined above
+               method = 'lm')
+# calculate an average error
+mean(model_2b$resample$RMSE)
+
+# calculate an average r-square value
+mean(model_2b$resample$Rsquared)
+
+```
+
+The model with 3 predictors has a slightly lower error and explains the variance in quality slightly better than a two variable model, so I am choosing it (model_3b) as a slightly better fit model.
