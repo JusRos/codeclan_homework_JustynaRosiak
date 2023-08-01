@@ -156,7 +156,7 @@ summary(mod3b)
 plot(mod3b)
 ```
 
-Density has improved the model only very slightly as now around 24 % of variance in the quality can be expalined by all theree variables - alcohol, volatile_acidity and density.
+Density has improved the model only very slightly as now around 24 % of variance in the quality can be explained by all three variables - alcohol, volatile_acidity and density.
 
 let's test the mod2b and mod3b using K-fold method.
 
@@ -191,3 +191,6 @@ mean(model_2b$resample$Rsquared)
 ```
 
 The model with 3 predictors has a slightly lower error and explains the variance in quality slightly better than a two variable model, so I am choosing it (model_3b) as a slightly better fit model.
+
+
+

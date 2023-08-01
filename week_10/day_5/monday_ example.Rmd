@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(GGally)
+library(caret)
+library(skimr)
+library(modelr)
+# read in data
+
+red_wine <- read_csv("data/wine_quality_red.csv")
+white_wine <- read_csv("data/wine_quality_white.csv")
+```
+
+ whatgoodness of fit measure of fit -adjr", AIC, BIC, parsimonious measures
+ test train ssplit 90:1-
+ 
+ K-Fold CV?- yes to prevent overfitting
+ model or models? red/white separately
+ 
+ white wine first
+ 
+```{r}
+n_data_white <- nrow(white_wine)
+test_prop <- 0.1
+
+test_index_white <- sample(1:n_data_white, size = n_data_white*test_prop)
+test_white <- slice(white_wine, test_index_white)
+train_white <- slice(white_wine, -test_index_white)
+```
+ # explore the data
+ # what does 1 row represent - one row represents a wine with tech measurement and sumamrised average of quality rating
+ # what variab;es do we have, real- world process etc
+ # what influences targert(wine quality)
+ 
+ desnisty, alcoghol, extreme values of acidity
+ # what transformations might be useful?
+ log transformation opportunities for positively skewaed data
+ 
+```{r}
+ skim(train_white)
+```
+```{r message = FALSE}
+train_white %>% 
+  select(quality, 2:7) %>%  #choose variables from 2-7 column so it's easier to see while using gg
+  plot
+  ggpairs(progress = FALSE)
+```
+```{r}
+train_white %>% 
+  select(quality, 8:14) %>% 
+  ggpairs(progress = FALSE)
+```
+
+let#s do transforamtions log of 1+ variable
+```{r}
+train_white_fe <- train_white %>% 
+  mutate(across(where(is.numeric),
+                .fns = ~ log(1 + .x),
+                .names = "log_{.col}")) %>% # log transformed everything and added new columns with log in the name
+  mutate(chlorides_diff_to_mean = chlorides - mean(chlorides), # shifted distribution to center it around 0
+          .after = chlorides) %>% 
+  mutate(chloride_abs_diff_to_mean = abs(chlorides_diff_to_mean), .after = chlorides_diff_to_mean)
+
+```
+
+
+```{r}
+
+train_white_fe %>% 
+  select(quality, starts_with("log")) %>% 
+  select(1:8) %>% 
+  select(starts_with("log"), quality) %>%  #to have quality at the end of the ggpairs (this puts quality on y axis when data is presented)
+  ggpairs(progress = FALSE)
+
+
+
+ ggplot(train_white_fe)+
+  aes(x = chloride_abs_diff_to_mean, y = quality)+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+ 
+```{r}
+mod1 <- lm(quality ~ alcohol, data = train_white_fe)
+summary(mod1)
+```
+ 
+ for every 3% of alcohol we get 1 point increase in quality. explaining about 17% of the variation.
+ 
+  from the second stage we're doing it on residuals as from now on, we're interested only in finding out what helps us explain the difference in resuduals
+ 
+```{r}
+ train_white_fe %>% 
+  add_predictions(mod1) %>% 
+  add_residuals(mod1) %>% 
+  select(1:6, resid) %>% 
+  ggpairs(progress = FALSE)
+summary(mod1)
+```
+ 
+```{r}
+mod2 <- lm(quality ~ alcohol + volatile_acidity, data = train_white_fe)
+summary(mod2)
+
+plot(mod2)
+```
+ 
+ decent looking residuals vs fitted
+ qq plot - looking fairly normal
+ scale-location checking for homstedasticity, the higher we guess the more wrong we are - we 
+ 
+```{r}
+white_wine_cv_10_fold <- trainControl(method = "cv", # cross-validation
+                           number = 10, # 10-fold
+                           savePredictions = TRUE) # save all predictions
+
+model_ww10fold <- train(quality ~ .,
+               data = train_white,
+               trControl = white_wine_cv_10_fold,
+               method = 'lm')
+```
+ 
+ validation set 10
+ test 70
+ train 20
