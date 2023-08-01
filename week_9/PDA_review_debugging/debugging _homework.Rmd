@@ -130,7 +130,9 @@ energy_scotland %>%
 
 
 ```
+
 ## Task 4
+
 Goal: calculate the average energy production for the Coal, Gas, and Oil sectors across the time period in the data.
 
 ```{r eval = FALSE}
