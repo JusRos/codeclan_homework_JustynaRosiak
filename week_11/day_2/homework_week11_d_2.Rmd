@@ -179,6 +179,9 @@ rpart.plot(titanic_fit,
 ## Question 5    
 
 <br> 
+
+My decision tree looked different last night when doing analysis so, analysis below are not correct.
+
 Write down what this tells you, in detail. What variables are important? What does each node tell you? Who has the highest chance of surviving? Who has the lowest? Provide as much detail as you can.    
 The probability of surviving while on titanic is 0.41.
 It looks like gender is the biggest predictor here - especially being a male, as 63 percent of all people who died were males. Being a female who marveled in the upper and middle class increased the probability of surviving to 0.94. Being a female under age of 16 also meant a high chance of surviving - 0.72. 22% of all records from the data set have fallen in to the category of being a female who traveled in the middle and upper class.Those who traveled with less than 3 family members ( spouses or siblings) had a greater chance of surviving if they were a child and female. 25% of all teh category from teh data set had fallen into a survived category.
