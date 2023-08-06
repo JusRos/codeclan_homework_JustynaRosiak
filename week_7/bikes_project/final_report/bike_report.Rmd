@@ -3,8 +3,8 @@ title: "Citi Bike NYC"
 output:
   html_document:
     df_print: paged
-  html_notebook: default
   pdf_document: default
+  html_notebook: default
 code_folding: hide
 ---
 
@@ -41,7 +41,7 @@ In the report I am hoping to find the answer to the following questions:
 
 **Business processes and data flow (1.3)**
  
- ![](flow_graph.png)
+ ![](final_report/flow_graph.png)
 
 
 **Data types (1.5)**
@@ -52,7 +52,7 @@ The Bike data is a tsibble including 12 columns and 4268 rows. The tsibble inclu
 
 * categorical data e.g. type (Subscriber, Customer) or gender (Male, Female)
 
-* nominal e.g. bike id or start_station and end_station
+* nominal e.g. bike id or start_station and end_station id's (which labels data without providing any quantitative value) 
 
 * spatial data e.g. start and end longitude and latitude
 
@@ -61,9 +61,17 @@ The Bike data is a tsibble including 12 columns and 4268 rows. The tsibble inclu
 
 **Preparing data for visualisation (1.7)**
 
-1. Load the libraries and assign data to an object called *nyc_bikes_df*.
+In order to do data cleaning and preparing data for visualistations I have used a tidyverse package together with the following libraries:tsibbledata, tsibble, sf and leaflet. 
+To start with, I divided start time into 4 columns : *year, month, day and weekday.* Then I added a *date*, a *hire_length*  and *age* columns. As the *age* column included ages over 123(the highest age recorded so far in history), so I changed them to NAs and dropped them as there were only 2.
+I have also divided *starting_time* to *hour*, *minute* and *second* columns, created an  *age_range* and a *season* columns.
+Finally, I assigned the colour palette to an object called *colour_scheme*, so all visualisations could be uniform.
 
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,     # Hide messages
+  warning = FALSE      # Hide warnings
+)
+
 library(tidyverse)
 library(tsibbledata)
 library(tsibble)
@@ -72,17 +80,11 @@ library(ggplot2)
 library(sf)
 library(lubridate)
 library(leaflet)
-library(skimr)
-
 
 nyc_bikes_df <- nyc_bikes
 
+# Dividing start time into 4 columns: *year, month, day and weekday.* 
 
-```
-
-2. Dividing start time into 4 columns: *year, month, day and weekday.* 
-
-```{r}
 
 nyc_bikes_df <- nyc_bikes_df %>% 
   mutate(year = year(start_time),
@@ -90,44 +92,30 @@ nyc_bikes_df <- nyc_bikes_df %>%
         day = day(start_time),
         weekday = wday(start_time, label = TRUE, abbr = TRUE)
                         )
-```
 
-3. Add a *date* column.
-
-```{r}
+# Add a *date* column.
 
 nyc_bikes_df <- nyc_bikes_df %>% mutate(date = as_date(ymd_hms(start_time)))
 
-```
+# Add *hire_length* column.
 
-4. Add *hire_length* column.
 
-```{r}
 nyc_bikes_df <- nyc_bikes_df %>% mutate(hire_length = as.period(stop_time - start_time))
-```
 
-5. Add *age* column and change to NA those who's age is over 126 (the highest age recorded so far in history is 123) and then drop them as there were only 2.
+# Add *age* column and change to NA those who's age is over 126 (the highest age recorded so far in history is 123) and then drop them as there were only 2.
 
-```{r}
 nyc_bikes_df <- nyc_bikes_df %>% mutate(age = 2018 - birth_year) %>% mutate(age = if_else(age > 126, NA, age)) %>% drop_na(age)
 
-```
-
-6. Divide *starting_time* to *hour*, *minute* and *second* columns.
-
-```{r}
+# Divide *starting_time* to *hour*, *minute* and *second* columns.
 
 nyc_bikes_df <- nyc_bikes_df %>% 
       mutate(hour = hour(hire_length),
              minute = minute(hire_length), 
              second = second(hire_length)) %>% 
       mutate(length_minutes = round(hour * 60 + minute + second/60))
-```
 
-7. Create new column *age_range*.
+# Create new column *age_range*.
 
-
-```{r}
 nyc_bikes_df <- nyc_bikes_df %>% 
   mutate(age_range = case_when(
     age < 19 ~ "18 or less",
@@ -136,42 +124,42 @@ nyc_bikes_df <- nyc_bikes_df %>%
     age >= 40 & age < 50 ~ "40 to 49",
     age >= 50 & age < 60 ~ "50 to 59",
     age >= 60 ~ "60 or over"
-         )
-  )
-```
-8. Create a column *season*.
+         ))
 
+# Create a column *season*.
 
-```{r}
 nyc_bikes_df <- nyc_bikes_df %>% mutate(season = case_when(
   month %in% c("Dec", "Jan", "Feb") ~ "Winter",
   month %in% c("Mar", "Apr", "May") ~ "Spring",
   month %in% c("Jun", "Jul", "Aug") ~ "Summer",
   month %in% c("Sep", "Oct", "Nov") ~ "Autumn"
 ))
-```
 
 
-9. Assign colour palette to an object called *colour_scheme*, so all visualisations are uniform.
+# Assign colour palette to an object called *colour_scheme*, so all visualisations are uniform.
 
-```{r}
+
 
 colour_scheme <-  c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
-## 3. Data visualisation
 
 **Data visualisation as a tool for decision-making (1.4)**
 
 *Process and design (2.1, 2.7, 2.8, 2.9)*
 
-At first, I investigated variables of interest with simple single-variable distribution plots. Then I plotted variables, that I felt were important in order to answer questions set out for this report. I was trying to see if there were any patterns present in the data. After selecting key visualisations I made sure these were clearly portraying the message I wanted to convey, were aesthetically pleasing, as well as accurate and not misleading. The visualisations in this report were made in RStudio using the ggplot and leaflet packages. The colour scheme used in the visualisations is colour blind friendly. 
+At first, I investigated variables of interest with simple single-variable distribution plots. Then I plotted variables, that I felt were important in order to answer questions set out for this report.
+
+The Key performance Indicators (KPIs) in the analysis were the number of bike hires.
+
+I was trying to see if there were any patterns present in the data. After selecting key visualisations I made sure these were clearly portraying the message I wanted to convey, were aesthetically pleasing, as well as accurate and not misleading. The visualisations in this report were made in RStudio using the ggplot and leaflet packages. The colour scheme used in the visualisations is colour blind friendly. 
 
 
 ## **1. Start stations across Jersey City.** 
 
 
-```{r}
+```{r echo=FALSE}
+
 nyc_bikes_tibble <- as_tibble(nyc_bikes_df)
 start_stations <- nyc_bikes_tibble %>%
   select(start_station , start_lat, start_long) %>% 
@@ -193,7 +181,8 @@ This is a geospatial visualisation showing 52 bike hire stations in Jersey City 
 
 ## **2. What was the pattern of bike hires throughout 2018?**
 
-```{r}
+```{r echo=FALSE}
+
 nyc_bikes_df %>% 
   ggplot()+
   geom_bar(aes(x = month, fill = type))+
@@ -214,7 +203,8 @@ This visualisation suggests that there may be a need for increased allocation of
 
 ## **3. Bike hires during summer and winter months.**
 
-```{r}
+```{r echo=FALSE}
+
 nyc_bikes_df %>% filter(season == "Summer" | season == "Winter") %>% 
   ggplot(aes(x = weekday, fill = type))+
   geom_bar()+
@@ -234,7 +224,8 @@ The inforamtion revealed by this plot can help with resource planning and alloca
 
 ## **4. A typical regular (subscriber) user.**
 
-```{r}
+```{r echo=FALSE}
+
 nyc_bikes_df %>% filter(gender == "Male" | gender == "Female") %>% filter(type == "Subscriber") %>% filter(season == "Summer" | season == "Winter") %>% 
   ggplot(aes(x = age_range, fill = gender))+
   geom_bar(position = "dodge")+
@@ -257,7 +248,7 @@ The information provided by this plot can help making decisions related to marke
 
 ## **5. A typical casual (customer) user.**
 
-```{r}
+```{r echo=FALSE}
 nyc_bikes_df %>% filter(gender == "Male" | gender == "Female") %>% filter(type == "Customer") %>% filter(season == "Summer" | season == "Winter") %>% 
   ggplot(aes(x = age_range, fill = gender))+
   geom_bar(position = "dodge")+
